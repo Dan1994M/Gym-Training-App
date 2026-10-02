@@ -9,8 +9,8 @@
 <meta name="theme-color" content="#0f1115">
 <title>Trainingspläne</title>
 <style>
-:root{--bg:#f2f2f7;--card:#fff;--tx:#1c1c1e;--mu:#8e8e93;--ac:#0a84ff;--dn:#ff3b30;--bd:#e5e5ea}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#1c1c1e;--tx:#f2f2f7;--mu:#8e8e93;--bd:#2c2c2e}}
+:root{--bg:#f2f2f7;--card:#fff;--tx:#1c1c1e;--mu:#8e8e93;--ac:#0a84ff;--dn:#ff3b30;--ok:#34c759;--bd:#e5e5ea}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#1c1c1e;--tx:#f2f2f7;--bd:#2c2c2e}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;
 padding:env(safe-area-inset-top) 0 calc(90px + env(safe-area-inset-bottom));-webkit-user-select:none;user-select:none}
@@ -21,19 +21,25 @@ h1{margin:0 0 10px;font-size:30px;font-weight:700}
 .tab{flex:0 0 auto;border:0;border-radius:18px;padding:8px 14px;background:var(--card);color:var(--tx);font-size:15px;font-weight:600}
 .tab.on{background:var(--ac);color:#fff}
 main{padding:4px 16px}
-.card{background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
-.n{font-size:17px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.st{display:flex;gap:6px;margin-top:8px}
-.p{background:var(--bg);border-radius:8px;padding:4px 8px;font-size:14px;font-variant-numeric:tabular-nums}
-.p b{font-size:16px}
+.card{background:var(--card);border-radius:14px;padding:12px 8px 12px 16px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .grow{flex:1;min-width:0}
-.ord{display:flex;flex-direction:column;gap:2px}
-.ord button{border:0;background:none;color:var(--mu);font-size:18px;width:36px;height:30px}
+.n{font-size:17px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.n small{color:var(--mu);font-weight:400;font-size:13px;margin-left:6px}
+.qs{display:flex;align-items:center;gap:8px;margin-top:8px}
+.qw{display:flex;align-items:center;background:var(--bg);border-radius:10px}
+.qw button{border:0;background:none;color:var(--ac);font-size:22px;width:44px;height:40px}
+.qw span{min-width:62px;text-align:center;font-variant-numeric:tabular-nums;font-size:14px}
+.qw b{font-size:17px}
+.flash{animation:fl .5s}@keyframes fl{0%{color:var(--ok)}100%{color:inherit}}
+.p{background:var(--bg);border-radius:10px;padding:9px 10px;font-size:14px;font-variant-numeric:tabular-nums}
+.p b{font-size:16px}
+.ord{display:flex;flex-direction:column}
+.ord button{border:0;background:none;color:var(--mu);font-size:16px;width:36px;height:30px}
 .empty{text-align:center;color:var(--mu);padding:40px 20px}
 .fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:30px;border:0;background:var(--ac);color:#fff;font-size:32px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .bar{display:flex;justify-content:space-between;color:var(--mu);font-size:14px;margin:4px 2px 10px}
 .bar button{border:0;background:none;color:var(--ac);font-size:15px;padding:4px 0}
-dialog{border:0;border-radius:18px 18px 0 0;padding:0;width:100%;max-width:100%;margin:auto 0 0;background:var(--card);color:var(--tx)}
+dialog{border:0;border-radius:18px 18px 0 0;padding:0;width:100%;max-width:100%;max-height:90vh;margin:auto 0 0;background:var(--card);color:var(--tx)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
 .sh{padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 .sh h2{margin:0 0 14px;font-size:20px}
@@ -46,6 +52,15 @@ input{width:100%;font-size:17px;padding:12px;border:1px solid var(--bd);border-r
 .btns{display:flex;gap:10px;margin-top:18px}
 .btns button{flex:1;border:0;border-radius:12px;padding:14px;font-size:17px;font-weight:600}
 .pri{background:var(--ac);color:#fff}.sec{background:var(--bg);color:var(--tx)}.del{background:none;color:var(--dn);flex:0 0 auto!important}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.kp div{background:var(--bg);border-radius:10px;padding:8px;text-align:center}
+.kp small{display:block;color:var(--mu);font-size:12px}.kp b{font-size:18px}
+.up{color:var(--ok)}.dn{color:var(--dn)}
+svg{width:100%;height:auto;display:block;background:var(--bg);border-radius:10px}
+.hl{list-style:none;margin:12px 0 0;padding:0;max-height:30vh;overflow-y:auto}
+.hl li{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--bd);font-variant-numeric:tabular-nums}
+.hl li span:first-child{color:var(--mu);width:80px}.hl li b{flex:1}
+.hl button{border:0;background:none;color:var(--mu);font-size:18px;width:32px}
 </style>
 </head>
 <body>
@@ -61,6 +76,7 @@ input{width:100%;font-size:17px;padding:12px;border:1px solid var(--bd);border-r
 <div><label>Wdh.</label><div class="step"><button type="button" data-f="iR" data-d="-1">−</button><input id="iR" type="number" inputmode="numeric" min="0"><button type="button" data-f="iR" data-d="1">+</button></div></div>
 <div><label>Sätze</label><div class="step"><button type="button" data-f="iS" data-d="-1">−</button><input id="iS" type="number" inputmode="numeric" min="0"><button type="button" data-f="iS" data-d="1">+</button></div></div>
 </div>
+<label>Schrittweite Gewicht (kg)</label><input id="iSt" type="number" inputmode="decimal" step="0.5" min="0.5">
 <div class="btns"><button type="button" class="del" id="exDel">Löschen</button><button type="button" class="sec" id="exX">Abbrechen</button><button class="pri">Speichern</button></div>
 </form></dialog>
 
@@ -70,36 +86,91 @@ input{width:100%;font-size:17px;padding:12px;border:1px solid var(--bd);border-r
 <div class="btns"><button type="button" class="del" id="plDel">Löschen</button><button type="button" class="sec" id="plX">Abbrechen</button><button class="pri">Speichern</button></div>
 </form></dialog>
 
+<dialog id="dDet"><div class="sh">
+<h2 id="dtT"></h2>
+<div class="kp" id="dtK"></div>
+<div id="dtC"></div>
+<ul class="hl" id="dtL"></ul>
+<div class="btns"><button class="sec" id="dtX">Schließen</button><button class="pri" id="dtE">Bearbeiten</button></div>
+</div></dialog>
+
 <script>
 const K='trainingsplaene_v1',$=id=>document.getElementById(id);
 let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
 if(!D||!D.plans||!D.plans.length)D={cur:0,plans:[{name:'Plan A',ex:[]}]};
-let editEx=-1,editPl=-1;
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+// Migration: Historie anlegen
+D.plans.forEach(p=>p.ex.forEach(e=>{if(!e.h)e.h=e.w!==''&&e.w!=null?[{d:today(),w:+e.w}]:[];if(!e.st)e.st=2.5}));
+let editEx=-1,editPl=-1,detEx=-1;
 const save=()=>localStorage.setItem(K,JSON.stringify(D));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const fmt=n=>(n===''||n==null)?'–':String(n).replace('.',',');
+const fmt=n=>(n===''||n==null)?'–':String(Math.round(n*100)/100).replace('.',',');
+const dfm=s=>{const[y,m,d]=s.split('-');return d+'.'+m+'.'+y.slice(2)};
+const ago=s=>{const n=Math.round((new Date(today())-new Date(s))/864e5);return n===0?'heute':n===1?'gestern':'vor '+n+' T.'};
+
+// Gewicht setzen + Historie: pro Tag max. ein Eintrag (letzter Wert zählt)
+function setW(e,w){
+  if(w===''||w==null||isNaN(w)){e.w='';return}
+  w=Math.max(0,Math.round(w*100)/100);e.w=w;
+  const t=today(),h=e.h,l=h[h.length-1];
+  if(l&&l.d===t){l.w=w;if(h.length>1&&h[h.length-2].w===w)h.pop()}
+  else if(!l||l.w!==w)h.push({d:t,w});
+}
 
 function render(){
   if(D.cur>=D.plans.length)D.cur=0;
   $('tabs').innerHTML=D.plans.map((p,i)=>`<button class="tab${i==D.cur?' on':''}" data-i="${i}">${esc(p.name)}</button>`).join('')+'<button class="tab" data-i="new">＋ Plan</button>';
   const p=D.plans[D.cur];
   $('main').innerHTML=`<div class="bar"><span>${p.ex.length} Übungen · ${p.ex.reduce((a,e)=>a+(+e.s||0),0)} Sätze</span><button id="plEd">Plan bearbeiten</button></div>`+
-  (p.ex.length?p.ex.map((e,i)=>`<div class="card" data-e="${i}"><div class="grow"><div class="n">${esc(e.n)}</div>
-  <div class="st"><span class="p"><b>${fmt(e.w)}</b> kg</span><span class="p"><b>${fmt(e.s)}</b> × <b>${fmt(e.r)}</b></span></div></div>
-  <div class="ord"><button data-m="-1" data-e="${i}">▲</button><button data-m="1" data-e="${i}">▼</button></div></div>`).join('')
+  (p.ex.length?p.ex.map((e,i)=>{const l=e.h[e.h.length-1];return `<div class="card"><div class="grow">
+  <div class="n" data-d="${i}">${esc(e.n)}${l?`<small>${ago(l.d)}</small>`:''}</div>
+  <div class="qs"><div class="qw"><button data-q="-1" data-e="${i}">−</button><span id="w${i}"><b>${fmt(e.w)}</b> kg</span><button data-q="1" data-e="${i}">+</button></div>
+  <span class="p" data-d="${i}"><b>${fmt(e.s)}</b> × <b>${fmt(e.r)}</b></span></div></div>
+  <div class="ord"><button data-m="-1" data-e="${i}">▲</button><button data-m="1" data-e="${i}">▼</button></div></div>`}).join('')
   :'<div class="empty">Noch keine Übungen.<br>Tippe auf ＋ um eine hinzuzufügen.</div>');
   $('plEd').onclick=()=>openPl(D.cur);
 }
 $('tabs').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;if(i==='new')return openPl(-1);D.cur=+i;save();render()};
-$('main').onclick=e=>{
-  const m=e.target.dataset.m;
-  if(m){const ex=D.plans[D.cur].ex,i=+e.target.dataset.e,j=i+ +m;if(j<0||j>=ex.length)return;[ex[i],ex[j]]=[ex[j],ex[i]];save();render();return}
-  const c=e.target.closest('.card');if(c)openEx(+c.dataset.e);
+$('main').onclick=ev=>{
+  const t=ev.target.closest('button,[data-d]');if(!t)return;const ex=D.plans[D.cur].ex;
+  if(t.dataset.q){const i=+t.dataset.e,e=ex[i];setW(e,(+e.w||0)+ +t.dataset.q*e.st);save();render();
+    const s=$('w'+i);s.classList.add('flash');navigator.vibrate&&navigator.vibrate(10);return}
+  if(t.dataset.m){const i=+t.dataset.e,j=i+ +t.dataset.m;if(j<0||j>=ex.length)return;[ex[i],ex[j]]=[ex[j],ex[i]];save();render();return}
+  if(t.dataset.d!=null)openDet(+t.dataset.d);
 };
+
+function openDet(i){
+  detEx=i;const e=D.plans[D.cur].ex[i],h=e.h;
+  $('dtT').textContent=e.n;
+  const f=h[0],l=h[h.length-1],dl=f&&l?l.w-f.w:0,pc=f&&f.w?dl/f.w*100:0;
+  const cls=dl>0?'up':dl<0?'dn':'';
+  $('dtK').innerHTML=`<div><small>Start</small><b>${f?fmt(f.w):'–'}</b></div><div><small>Aktuell</small><b>${fmt(e.w)}</b></div>
+  <div><small>Δ gesamt</small><b class="${cls}">${dl>0?'+':''}${fmt(dl)}</b><small class="${cls}">${f&&f.w?(pc>0?'+':'')+pc.toFixed(0)+' %':''}</small></div>`;
+  $('dtC').innerHTML=h.length>1?chart(h):'<div class="empty" style="padding:16px">Diagramm erscheint ab 2 Einträgen.</div>';
+  $('dtL').innerHTML=h.map((x,k)=>({x,k})).reverse().map(({x,k})=>{const d=k?x.w-h[k-1].w:0;
+    return `<li><span>${dfm(x.d)}</span><b>${fmt(x.w)} kg</b><span class="${d>0?'up':d<0?'dn':''}">${k?(d>0?'+':'')+fmt(d):'Start'}</span><button data-h="${k}">×</button></li>`}).join('');
+  if(!$('dDet').open)$('dDet').showModal();
+}
+function chart(h){
+  const W=340,H=150,P=24,t0=+new Date(h[0].d),t1=+new Date(h[h.length-1].d)||t0+1,ws=h.map(x=>x.w);
+  let lo=Math.min(...ws),hi=Math.max(...ws);if(lo===hi){lo-=5;hi+=5}
+  const X=d=>P+(t1>t0?(new Date(d)-t0)/(t1-t0):0.5)*(W-2*P),Y=w=>H-P-(w-lo)/(hi-lo)*(H-2*P);
+  let path='';h.forEach((x,k)=>{path+=(k?`H${X(x.d)}V${Y(x.w)}`:`M${X(x.d)},${Y(x.w)}`)});
+  return `<svg viewBox="0 0 ${W} ${H}"><g fill="var(--mu)" font-size="10">
+  <text x="4" y="${Y(hi)+3}">${fmt(hi)}</text><text x="4" y="${Y(lo)+3}">${fmt(lo)}</text>
+  <text x="${P}" y="${H-6}">${dfm(h[0].d)}</text><text x="${W-P}" y="${H-6}" text-anchor="end">${dfm(h[h.length-1].d)}</text></g>
+  <path d="${path}" fill="none" stroke="var(--ac)" stroke-width="2.5"/>
+  ${h.map(x=>`<circle cx="${X(x.d)}" cy="${Y(x.w)}" r="3.5" fill="var(--ac)"/>`).join('')}</svg>`;
+}
+$('dtL').onclick=ev=>{const k=ev.target.dataset.h;if(k==null)return;const e=D.plans[D.cur].ex[detEx];
+  if(!confirm('Eintrag löschen?'))return;e.h.splice(+k,1);if(+k===e.h.length&&e.h.length)e.w=e.h[e.h.length-1].w;save();render();openDet(detEx)};
+$('dtX').onclick=()=>$('dDet').close();
+$('dtE').onclick=()=>{$('dDet').close();openEx(detEx)};
+
 function openEx(i){
-  editEx=i;const e=i>=0?D.plans[D.cur].ex[i]:{n:'',w:'',r:10,s:3};
+  editEx=i;const e=i>=0?D.plans[D.cur].ex[i]:{n:'',w:'',r:10,s:3,st:2.5};
   $('exT').textContent=i>=0?'Übung bearbeiten':'Neue Übung';
-  $('iN').value=e.n;$('iW').value=e.w;$('iR').value=e.r;$('iS').value=e.s;
+  $('iN').value=e.n;$('iW').value=e.w;$('iR').value=e.r;$('iS').value=e.s;$('iSt').value=e.st;
   $('exDel').style.display=i>=0?'':'none';$('dEx').showModal();
 }
 function openPl(i){
@@ -109,10 +180,13 @@ function openPl(i){
 $('fab').onclick=()=>openEx(-1);
 document.querySelectorAll('.step button').forEach(b=>b.onclick=()=>{const f=$(b.dataset.f);f.value=Math.max(0,(+f.value||0)+ +b.dataset.d)});
 $('fEx').onsubmit=()=>{
-  const e={n:$('iN').value.trim(),w:$('iW').value,r:$('iR').value,s:$('iS').value};if(!e.n)return;
-  const ex=D.plans[D.cur].ex;editEx>=0?ex[editEx]=e:ex.push(e);save();render();
+  const n=$('iN').value.trim();if(!n)return;const ex=D.plans[D.cur].ex;
+  const e=editEx>=0?ex[editEx]:{h:[]};
+  Object.assign(e,{n,r:$('iR').value,s:$('iS').value,st:+$('iSt').value||2.5});
+  setW(e,$('iW').value===''?'':+$('iW').value);
+  if(editEx<0)ex.push(e);save();render();
 };
-$('exDel').onclick=()=>{if(confirm('Übung löschen?')){D.plans[D.cur].ex.splice(editEx,1);save();render();$('dEx').close()}};
+$('exDel').onclick=()=>{if(confirm('Übung inkl. Historie löschen?')){D.plans[D.cur].ex.splice(editEx,1);save();render();$('dEx').close()}};
 $('exX').onclick=()=>$('dEx').close();
 $('fPl').onsubmit=()=>{
   const n=$('iP').value.trim();if(!n)return;
@@ -120,7 +194,7 @@ $('fPl').onsubmit=()=>{
 };
 $('plDel').onclick=()=>{if(confirm('Plan inkl. aller Übungen löschen?')){D.plans.splice(editPl,1);D.cur=0;save();render();$('dPl').close()}};
 $('plX').onclick=()=>$('dPl').close();
-render();
+save();render();
 </script>
 </body>
 </html>
