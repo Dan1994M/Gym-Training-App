@@ -60,6 +60,11 @@ svg{width:100%;height:auto;display:block;background:var(--bg);border-radius:10px
 .hl{list-style:none;margin:12px 0 0;padding:0;max-height:30vh;overflow-y:auto}
 .hl li{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--bd);font-variant-numeric:tabular-nums}
 .hl li span:first-child{color:var(--mu);width:80px}.hl li b{flex:1}
+.sug{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sug:empty{display:none}
+.sug button{border:0;border-radius:16px;padding:8px 12px;background:var(--bg);color:var(--tx);font-size:15px;text-align:left}
+.sug button small{color:var(--mu);margin-left:4px}
+.sug button.in{opacity:.45}
 .hl button{border:0;background:none;color:var(--mu);font-size:18px;width:32px}
 </style>
 </head>
@@ -70,7 +75,7 @@ svg{width:100%;height:auto;display:block;background:var(--bg);border-radius:10px
 
 <dialog id="dEx"><form class="sh" method="dialog" id="fEx">
 <h2 id="exT">Übung</h2>
-<label>Gerät / Übung</label><input id="iN" required autocomplete="off" placeholder="z. B. Beinpresse">
+<label>Gerät / Übung</label><input id="iN" required autocomplete="off" placeholder="z. B. Beinpresse"><div class="sug" id="sug"></div>
 <div class="row">
 <div><label>Gewicht (kg)</label><div class="step"><button type="button" data-f="iW" data-d="-2.5">−</button><input id="iW" type="number" inputmode="decimal" step="0.5" min="0"><button type="button" data-f="iW" data-d="2.5">+</button></div></div>
 <div><label>Wdh.</label><div class="step"><button type="button" data-f="iR" data-d="-1">−</button><input id="iR" type="number" inputmode="numeric" min="0"><button type="button" data-f="iR" data-d="1">+</button></div></div>
@@ -171,8 +176,24 @@ function openEx(i){
   editEx=i;const e=i>=0?D.plans[D.cur].ex[i]:{n:'',w:'',r:10,s:3,st:2.5};
   $('exT').textContent=i>=0?'Übung bearbeiten':'Neue Übung';
   $('iN').value=e.n;$('iW').value=e.w;$('iR').value=e.r;$('iS').value=e.s;$('iSt').value=e.st;
-  $('exDel').style.display=i>=0?'':'none';$('dEx').showModal();
+  $('exDel').style.display=i>=0?'':'none';$('sug').innerHTML='';$('dEx').showModal();
 }
+// Katalog: alle Übungen aus allen Plänen, eindeutig nach Name, jeweils zuletzt geänderte Variante
+function catalog(){
+  const m={};D.plans.forEach(p=>p.ex.forEach(e=>{const k=e.n.trim().toLowerCase(),d=(e.h[e.h.length-1]||{d:''}).d;
+    if(!m[k]||d>m[k].d)m[k]={e,d}}));return Object.values(m).map(x=>x.e);
+}
+let sugList=[];
+$('iN').oninput=()=>{
+  const q=$('iN').value.trim().toLowerCase();
+  if(editEx>=0||!q){$('sug').innerHTML='';return}
+  const cur=new Set(D.plans[D.cur].ex.map(e=>e.n.trim().toLowerCase()));
+  sugList=catalog().filter(e=>e.n.toLowerCase().includes(q)&&e.n.toLowerCase()!==q)
+    .sort((a,b)=>b.n.toLowerCase().startsWith(q)-a.n.toLowerCase().startsWith(q)||a.n.localeCompare(b.n)).slice(0,6);
+  $('sug').innerHTML=sugList.map((e,i)=>`<button type="button" data-s="${i}" class="${cur.has(e.n.trim().toLowerCase())?'in':''}">${esc(e.n)}<small>${fmt(e.w)} kg · ${fmt(e.s)}×${fmt(e.r)}</small></button>`).join('');
+};
+$('sug').onclick=ev=>{const b=ev.target.closest('[data-s]');if(!b)return;const e=sugList[+b.dataset.s];
+  $('iN').value=e.n;$('iW').value=e.w;$('iR').value=e.r;$('iS').value=e.s;$('iSt').value=e.st;$('sug').innerHTML='';};
 function openPl(i){
   editPl=i;$('plT').textContent=i>=0?'Plan bearbeiten':'Neuer Plan';
   $('iP').value=i>=0?D.plans[i].name:'';$('plDel').style.display=i>=0&&D.plans.length>1?'':'none';$('dPl').showModal();
