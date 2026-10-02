@@ -317,7 +317,7 @@ $('plDel').onclick=()=>{if(confirm('Plan inkl. aller Übungen löschen?')){D.pla
 $('plX').onclick=()=>$('dPl').close();
 
 // ===== Training-Tracking =====
-D.sess=D.sess||[];D.act=D.act||null;D.sess.forEach(x=>{delete x.rp;delete x.rc});
+D.sess=D.sess||[];D.act=D.act||null;D.sess.forEach(x=>{delete x.rp;delete x.rc;if(x.wu&&!x.ts){x.ts=x.st;x.st-=x.wu}});
 let view='p',calY,calM,tick=null;
 const PAL=['#0a84ff','#ff9f0a','#bf5af2','#34c759','#ff375f','#64d2ff','#ffd60a','#ac8e68'];
 const col=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))>>>0;return PAL[h%PAL.length]};
@@ -369,7 +369,7 @@ function showAct(){
     clearInterval(tick);tick=setInterval(()=>{const c=$('clk');c&&(c.textContent=hms(Date.now()-A.wu))},1000);return}
   const p=actPlan(),A=D.act,L=items(),dn=new Set(A.done),{n,t}=cnt(),lr=A.lr;
   $('act').innerHTML=`<div class="ah"><h2 style="color:${col(p.name)}">${esc(p.name)}</h2><button id="aX">Verwerfen</button></div>
-  <div class="clk" id="clk">${hms(Date.now()-A.st)}</div><div class="cs">Start ${hm(A.st)} Uhr · ${n}/${t} erledigt${A.wd?` · Warm-up ${mins(A.wd)}`:''}</div>
+  ${A.wd?'<div class="cs" style="margin:4px 0 -4px">Zeit am Trainingsplan</div>':''}<div class="clk" id="clk">${hms(Date.now()-A.st)}</div><div class="cs">Start ${hm(A.wu||A.st)} Uhr${A.wd?` · 🔥 Warm-up ${mins(A.wd)} · Plan ab ${hm(A.st)}`:''}<br>${n}/${t} erledigt</div>
   <div class="prog"><i style="width:${t?n/t*100:0}%"></i></div>`+
   L.map((x,i)=>{const ok=dn.has(x.id)&&x.t!=='skip',e=x.e,tag=x.t==='rep'?`<small class="tg">statt ${esc(x.o)}</small>`:x.t==='x'?'<small class="tg">Zusatz</small>':x.t==='skip'?'<small class="tg sk">übersprungen</small>':'';
     return `<div class="card${ok?' ok':''}${x.t==='skip'?' skp':''}" data-c="${i}"><div class="chk">${ok?'✓':x.t==='skip'?'–':''}</div>
@@ -419,9 +419,9 @@ $('fRp').onsubmit=()=>{const n=$('rN').value.trim();if(!n)return;const e={n,w:$(
 $('rpX').onclick=()=>$('dRp').close();
 function endAct(){
   const A=D.act,p=actPlan(),{n,t}=cnt(),en=Date.now();
-  if(!confirm(`Training beenden?\n${mins(en-A.st)} · ${n}/${t} Übungen`))return;
+  if(!confirm(`Training beenden?\n${mins(en-(A.wu||A.st))}${A.wd?' inkl. Warm-up':''} · ${n}/${t} Übungen`))return;
   const L=items();
-  D.sess.push({pn:p.name,st:A.st,en,done:n,tot:t,sk:A.skip.length,ch:L.filter(x=>x.t==='rep').map(x=>x.o+' → '+x.e.n),xt:A.xtra.map(e=>e.n),...(A.wd?{wu:A.wd}:{})});
+  D.sess.push({pn:p.name,st:A.wu||A.st,ts:A.st,en,done:n,tot:t,sk:A.skip.length,ch:L.filter(x=>x.t==='rep').map(x=>x.o+' → '+x.e.n),xt:A.xtra.map(e=>e.n),...(A.wd?{wu:A.wd}:{})});
   D.act=null;save();hideAct();const d=new Date();calY=d.getFullYear();calM=d.getMonth();setView('t')}
 
 // Kalender & Auswertung
@@ -465,7 +465,7 @@ function renderT(){
   $('cP').onclick=()=>{calM--;if(calM<0){calM=11;calY--}renderT()};$('cN').onclick=()=>{calM++;if(calM>11){calM=0;calY++}renderT()};
   $('cal').onclick=e=>{const c=e.target.closest('[data-day]');c&&openDay(c.dataset.day)};
 }
-function sessLi(x){const i=D.sess.indexOf(x);return `<li><i style="background:${col(x.pn)}"></i><div><b>${esc(x.pn)}</b><small>${dfm(dk(x.st))} · ${hm(x.st)}–${hm(x.en)} · ${mins(x.en-x.st)} · ${x.done}/${x.tot}${x.wu?'<br>🔥 Warm-up '+mins(x.wu):''}${x.ch&&x.ch.length?'<br>🔁 '+x.ch.map(esc).join(', '):''}${x.sk?'<br>⏭ '+x.sk+' übersprungen':''}${x.xt&&x.xt.length?'<br>＋ '+x.xt.map(esc).join(', '):''}</small></div><button data-del="${i}">×</button></li>`}
+function sessLi(x){const i=D.sess.indexOf(x);return `<li><i style="background:${col(x.pn)}"></i><div><b>${esc(x.pn)}</b><small>${dfm(dk(x.st))} · ${hm(x.st)}–${hm(x.en)} · ${mins(x.en-x.st)} · ${x.done}/${x.tot}${x.wu?'<br>🔥 Warm-up '+mins(x.wu)+' · Plan '+mins(x.en-x.ts):''}${x.ch&&x.ch.length?'<br>🔁 '+x.ch.map(esc).join(', '):''}${x.sk?'<br>⏭ '+x.sk+' übersprungen':''}${x.xt&&x.xt.length?'<br>＋ '+x.xt.map(esc).join(', '):''}</small></div><button data-del="${i}">×</button></li>`}
 let dayK='';
 function openDay(k){dayK=k;const l=D.sess.filter(x=>dk(x.st)===k);if(!l.length){$('dDay').open&&$('dDay').close();return}
   const d=new Date(k+'T12:00');$('dayT').textContent=WD[d.getDay()]+', '+dfm(k);$('dayL').innerHTML=l.map(sessLi).join('');$('dDay').open||$('dDay').showModal()}
