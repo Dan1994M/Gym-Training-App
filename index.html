@@ -114,6 +114,16 @@ const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth
 D.plans.forEach(p=>p.ex.forEach(e=>{if(!e.h)e.h=e.w!==''&&e.w!=null?[{d:today(),w:+e.w}]:[];delete e.st}));
 let editEx=-1,editPl=-1,detEx=-1;
 const save=()=>localStorage.setItem(K,JSON.stringify(D));
+const key=e=>e.n.trim().toLowerCase();
+const same=e=>{const k=key(e),r=[];D.plans.forEach(p=>p.ex.forEach(o=>{if(o!==e&&key(o)===k)r.push(o)}));return r};
+// Gewicht, Wdh. und Historie global auf alle Pläne übertragen (Sätze bleiben planspezifisch)
+function sync(e){same(e).forEach(o=>{o.w=e.w;o.r=e.r;o.h=e.h.map(x=>({...x}))})}
+// Einmalige Zusammenführung bestehender Duplikate: Historien vereinigen, zuletzt geänderter Stand gewinnt
+(()=>{const g={};D.plans.forEach(p=>p.ex.forEach(e=>(g[key(e)]=g[key(e)]||[]).push(e)));
+  Object.values(g).filter(a=>a.length>1).forEach(a=>{
+    const ld=e=>(e.h[e.h.length-1]||{d:''}).d,m=a.reduce((x,y)=>ld(y)>ld(x)?y:x),byD={};
+    a.forEach(e=>e.h.forEach(x=>{if(!byD[x.d])byD[x.d]=x}));m.h.forEach(x=>byD[x.d]=x);
+    m.h=Object.values(byD).sort((x,y)=>x.d<y.d?-1:1).map(x=>({...x}));if(m.h.length)m.w=m.h[m.h.length-1].w;sync(m)})})();
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>(n===''||n==null)?'–':String(Math.round(n*100)/100).replace('.',',');
 const dfm=s=>{const[y,m,d]=s.split('-');return d+'.'+m+'.'+y.slice(2)};
@@ -144,7 +154,7 @@ function render(){
 $('tabs').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;if(i==='new')return openPl(-1);D.cur=+i;save();render()};
 $('main').onclick=ev=>{
   const t=ev.target.closest('button,[data-d],[data-w]');if(!t)return;const ex=D.plans[D.cur].ex;
-  if(t.dataset.q){const i=+t.dataset.e,e=ex[i];setW(e,(+e.w||0)+ +t.dataset.q);save();render();
+  if(t.dataset.q){const i=+t.dataset.e,e=ex[i];setW(e,(+e.w||0)+ +t.dataset.q);sync(e);save();render();
     const s=$('w'+i);s.classList.add('flash');navigator.vibrate&&navigator.vibrate(10);return}
   if(t.dataset.w!=null){const i=+t.dataset.w;wEx=i;$('iWq').value=ex[i].w===''?'':String(ex[i].w).replace('.',',');$('wqT').textContent=ex[i].n;$('dW').showModal();setTimeout(()=>{$('iWq').focus();$('iWq').select()},50);return}
   if(t.dataset.m){const i=+t.dataset.e,j=i+ +t.dataset.m;if(j<0||j>=ex.length)return;[ex[i],ex[j]]=[ex[j],ex[i]];save();render();return}
@@ -175,11 +185,11 @@ function chart(h){
   ${h.map(x=>`<circle cx="${X(x.d)}" cy="${Y(x.w)}" r="3.5" fill="var(--ac)"/>`).join('')}</svg>`;
 }
 $('dtL').onclick=ev=>{const k=ev.target.dataset.h;if(k==null)return;const e=D.plans[D.cur].ex[detEx];
-  if(!confirm('Eintrag löschen?'))return;e.h.splice(+k,1);if(+k===e.h.length&&e.h.length)e.w=e.h[e.h.length-1].w;save();render();openDet(detEx)};
+  if(!confirm('Eintrag löschen?'))return;e.h.splice(+k,1);if(+k===e.h.length&&e.h.length)e.w=e.h[e.h.length-1].w;sync(e);save();render();openDet(detEx)};
 let wEx=-1;
 $('fW').onsubmit=ev=>{const v=$('iWq').value.trim().replace(',','.');
   if(v===''||isNaN(+v)){ev.preventDefault();$('iWq').focus();return}
-  setW(D.plans[D.cur].ex[wEx],+v);save();render();const s=$('w'+wEx);s&&s.classList.add('flash')};
+  {const e=D.plans[D.cur].ex[wEx];setW(e,+v);sync(e)}save();render();const s=$('w'+wEx);s&&s.classList.add('flash')};
 $('wqX').onclick=()=>$('dW').close();
 $('dtX').onclick=()=>$('dDet').close();
 $('dtE').onclick=()=>{$('dDet').close();openEx(detEx)};
@@ -202,7 +212,7 @@ $('iN').oninput=()=>{
   const cur=new Set(D.plans[D.cur].ex.map(e=>e.n.trim().toLowerCase()));
   sugList=catalog().filter(e=>e.n.toLowerCase().includes(q)&&e.n.toLowerCase()!==q)
     .sort((a,b)=>b.n.toLowerCase().startsWith(q)-a.n.toLowerCase().startsWith(q)||a.n.localeCompare(b.n)).slice(0,6);
-  $('sug').innerHTML=sugList.map((e,i)=>`<button type="button" data-s="${i}" class="${cur.has(e.n.trim().toLowerCase())?'in':''}">${esc(e.n)}<small>${fmt(e.w)} kg · ${fmt(e.s)}×${fmt(e.r)}</small></button>`).join('');
+  $('sug').innerHTML=sugList.map((e,i)=>`<button type="button" data-s="${i}" class="${cur.has(e.n.trim().toLowerCase())?'in':''}">${esc(e.n)}<small>${fmt(e.w)} kg · ${fmt(e.r)} Wdh.</small></button>`).join('');
 };
 $('sug').onclick=ev=>{const b=ev.target.closest('[data-s]');if(!b)return;const e=sugList[+b.dataset.s];
   $('iN').value=e.n;$('iW').value=e.w;$('iR').value=e.r;$('iS').value=e.s;$('sug').innerHTML='';};
@@ -216,8 +226,9 @@ $('fEx').onsubmit=()=>{
   const n=$('iN').value.trim();if(!n)return;const ex=D.plans[D.cur].ex;
   const e=editEx>=0?ex[editEx]:{h:[]};
   Object.assign(e,{n,r:$('iR').value,s:$('iS').value});
+  const m=same(e)[0];if(m&&(editEx<0||!e.h.length))e.h=m.h.map(x=>({...x}));
   setW(e,$('iW').value===''?'':+$('iW').value);
-  if(editEx<0)ex.push(e);save();render();
+  if(editEx<0)ex.push(e);sync(e);save();render();
 };
 $('exDel').onclick=()=>{if(confirm('Übung inkl. Historie löschen?')){D.plans[D.cur].ex.splice(editEx,1);save();render();$('dEx').close()}};
 $('exX').onclick=()=>$('dEx').close();
