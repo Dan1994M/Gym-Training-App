@@ -369,7 +369,7 @@ function showAct(){
     clearInterval(tick);tick=setInterval(()=>{const c=$('clk');c&&(c.textContent=hms(Date.now()-A.wu))},1000);return}
   const p=actPlan(),A=D.act,L=items(),dn=new Set(A.done),{n,t}=cnt(),lr=A.lr;
   $('act').innerHTML=`<div class="ah"><h2 style="color:${col(p.name)}">${esc(p.name)}</h2><button id="aX">Verwerfen</button></div>
-  ${A.wd?'<div class="cs" style="margin:4px 0 -4px">Zeit am Trainingsplan</div>':''}<div class="clk" id="clk">${hms(Date.now()-A.st)}</div><div class="cs">Start ${hm(A.wu||A.st)} Uhr${A.wd?` · 🔥 Warm-up ${mins(A.wd)} · Plan ab ${hm(A.st)}`:''}<br>${n}/${t} erledigt</div>
+  ${A.wd?'<div class="cs" style="margin:4px 0 -4px">Zeit am Trainingsplan</div>':''}<div class="clk" id="clk">${hms(Date.now()-A.st)}</div><div class="cs">Start ${hm(A.wu||A.st)} Uhr${A.wd?` · 🔥 inkl. ${mins(A.wd)} Warm-up`:''}<br>${n}/${t} erledigt</div>
   <div class="prog"><i style="width:${t?n/t*100:0}%"></i></div>`+
   L.map((x,i)=>{const ok=dn.has(x.id)&&x.t!=='skip',e=x.e,tag=x.t==='rep'?`<small class="tg">statt ${esc(x.o)}</small>`:x.t==='x'?'<small class="tg">Zusatz</small>':x.t==='skip'?'<small class="tg sk">übersprungen</small>':'';
     return `<div class="card${ok?' ok':''}${x.t==='skip'?' skp':''}" data-c="${i}"><div class="chk">${ok?'✓':x.t==='skip'?'–':''}</div>
