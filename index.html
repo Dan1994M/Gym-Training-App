@@ -28,6 +28,7 @@ main{padding:4px 16px}
 .qs{display:flex;align-items:center;gap:8px;margin-top:8px}
 .qw{display:flex;align-items:center;background:var(--bg);border-radius:10px}
 .qw button{border:0;background:none;color:var(--ac);font-size:22px;width:44px;height:40px}
+.qw span[data-w]{text-decoration:underline dotted var(--mu);text-underline-offset:4px}
 .qw span{min-width:62px;text-align:center;font-variant-numeric:tabular-nums;font-size:14px}
 .qw b{font-size:17px}
 .flash{animation:fl .5s}@keyframes fl{0%{color:var(--ok)}100%{color:inherit}}
@@ -77,11 +78,10 @@ svg{width:100%;height:auto;display:block;background:var(--bg);border-radius:10px
 <h2 id="exT">Übung</h2>
 <label>Gerät / Übung</label><input id="iN" required autocomplete="off" placeholder="z. B. Beinpresse"><div class="sug" id="sug"></div>
 <div class="row">
-<div><label>Gewicht (kg)</label><div class="step"><button type="button" data-f="iW" data-d="-2.5">−</button><input id="iW" type="number" inputmode="decimal" step="0.5" min="0"><button type="button" data-f="iW" data-d="2.5">+</button></div></div>
+<div><label>Gewicht (kg)</label><div class="step"><button type="button" data-f="iW" data-d="-1">−</button><input id="iW" type="number" inputmode="decimal" step="0.5" min="0"><button type="button" data-f="iW" data-d="1">+</button></div></div>
 <div><label>Wdh.</label><div class="step"><button type="button" data-f="iR" data-d="-1">−</button><input id="iR" type="number" inputmode="numeric" min="0"><button type="button" data-f="iR" data-d="1">+</button></div></div>
 <div><label>Sätze</label><div class="step"><button type="button" data-f="iS" data-d="-1">−</button><input id="iS" type="number" inputmode="numeric" min="0"><button type="button" data-f="iS" data-d="1">+</button></div></div>
 </div>
-<label>Schrittweite Gewicht (kg)</label><input id="iSt" type="number" inputmode="decimal" step="0.5" min="0.5">
 <div class="btns"><button type="button" class="del" id="exDel">Löschen</button><button type="button" class="sec" id="exX">Abbrechen</button><button class="pri">Speichern</button></div>
 </form></dialog>
 
@@ -89,6 +89,12 @@ svg{width:100%;height:auto;display:block;background:var(--bg);border-radius:10px
 <h2 id="plT">Plan</h2>
 <label>Name</label><input id="iP" required autocomplete="off" placeholder="z. B. Push / Oberkörper">
 <div class="btns"><button type="button" class="del" id="plDel">Löschen</button><button type="button" class="sec" id="plX">Abbrechen</button><button class="pri">Speichern</button></div>
+</form></dialog>
+
+<dialog id="dW"><form class="sh" method="dialog" id="fW">
+<h2 id="wqT"></h2><label>Neues Gewicht (kg)</label>
+<input id="iWq" type="text" inputmode="decimal" autocomplete="off" style="font-size:28px;text-align:center">
+<div class="btns"><button type="button" class="sec" id="wqX">Abbrechen</button><button class="pri">Übernehmen</button></div>
 </form></dialog>
 
 <dialog id="dDet"><div class="sh">
@@ -105,7 +111,7 @@ let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
 if(!D||!D.plans||!D.plans.length)D={cur:0,plans:[{name:'Plan A',ex:[]}]};
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 // Migration: Historie anlegen
-D.plans.forEach(p=>p.ex.forEach(e=>{if(!e.h)e.h=e.w!==''&&e.w!=null?[{d:today(),w:+e.w}]:[];if(!e.st)e.st=2.5}));
+D.plans.forEach(p=>p.ex.forEach(e=>{if(!e.h)e.h=e.w!==''&&e.w!=null?[{d:today(),w:+e.w}]:[];delete e.st}));
 let editEx=-1,editPl=-1,detEx=-1;
 const save=()=>localStorage.setItem(K,JSON.stringify(D));
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -129,7 +135,7 @@ function render(){
   $('main').innerHTML=`<div class="bar"><span>${p.ex.length} Übungen · ${p.ex.reduce((a,e)=>a+(+e.s||0),0)} Sätze</span><button id="plEd">Plan bearbeiten</button></div>`+
   (p.ex.length?p.ex.map((e,i)=>{const l=e.h[e.h.length-1];return `<div class="card"><div class="grow">
   <div class="n" data-d="${i}">${esc(e.n)}${l?`<small>${ago(l.d)}</small>`:''}</div>
-  <div class="qs"><div class="qw"><button data-q="-1" data-e="${i}">−</button><span id="w${i}"><b>${fmt(e.w)}</b> kg</span><button data-q="1" data-e="${i}">+</button></div>
+  <div class="qs"><div class="qw"><button data-q="-1" data-e="${i}">−</button><span id="w${i}" data-w="${i}"><b>${fmt(e.w)}</b> kg</span><button data-q="1" data-e="${i}">+</button></div>
   <span class="p" data-d="${i}"><b>${fmt(e.s)}</b> × <b>${fmt(e.r)}</b></span></div></div>
   <div class="ord"><button data-m="-1" data-e="${i}">▲</button><button data-m="1" data-e="${i}">▼</button></div></div>`}).join('')
   :'<div class="empty">Noch keine Übungen.<br>Tippe auf ＋ um eine hinzuzufügen.</div>');
@@ -137,9 +143,10 @@ function render(){
 }
 $('tabs').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;if(i==='new')return openPl(-1);D.cur=+i;save();render()};
 $('main').onclick=ev=>{
-  const t=ev.target.closest('button,[data-d]');if(!t)return;const ex=D.plans[D.cur].ex;
-  if(t.dataset.q){const i=+t.dataset.e,e=ex[i];setW(e,(+e.w||0)+ +t.dataset.q*e.st);save();render();
+  const t=ev.target.closest('button,[data-d],[data-w]');if(!t)return;const ex=D.plans[D.cur].ex;
+  if(t.dataset.q){const i=+t.dataset.e,e=ex[i];setW(e,(+e.w||0)+ +t.dataset.q);save();render();
     const s=$('w'+i);s.classList.add('flash');navigator.vibrate&&navigator.vibrate(10);return}
+  if(t.dataset.w!=null){const i=+t.dataset.w;wEx=i;$('iWq').value=ex[i].w===''?'':String(ex[i].w).replace('.',',');$('wqT').textContent=ex[i].n;$('dW').showModal();setTimeout(()=>{$('iWq').focus();$('iWq').select()},50);return}
   if(t.dataset.m){const i=+t.dataset.e,j=i+ +t.dataset.m;if(j<0||j>=ex.length)return;[ex[i],ex[j]]=[ex[j],ex[i]];save();render();return}
   if(t.dataset.d!=null)openDet(+t.dataset.d);
 };
@@ -169,13 +176,18 @@ function chart(h){
 }
 $('dtL').onclick=ev=>{const k=ev.target.dataset.h;if(k==null)return;const e=D.plans[D.cur].ex[detEx];
   if(!confirm('Eintrag löschen?'))return;e.h.splice(+k,1);if(+k===e.h.length&&e.h.length)e.w=e.h[e.h.length-1].w;save();render();openDet(detEx)};
+let wEx=-1;
+$('fW').onsubmit=ev=>{const v=$('iWq').value.trim().replace(',','.');
+  if(v===''||isNaN(+v)){ev.preventDefault();$('iWq').focus();return}
+  setW(D.plans[D.cur].ex[wEx],+v);save();render();const s=$('w'+wEx);s&&s.classList.add('flash')};
+$('wqX').onclick=()=>$('dW').close();
 $('dtX').onclick=()=>$('dDet').close();
 $('dtE').onclick=()=>{$('dDet').close();openEx(detEx)};
 
 function openEx(i){
-  editEx=i;const e=i>=0?D.plans[D.cur].ex[i]:{n:'',w:'',r:10,s:3,st:2.5};
+  editEx=i;const e=i>=0?D.plans[D.cur].ex[i]:{n:'',w:'',r:10,s:3};
   $('exT').textContent=i>=0?'Übung bearbeiten':'Neue Übung';
-  $('iN').value=e.n;$('iW').value=e.w;$('iR').value=e.r;$('iS').value=e.s;$('iSt').value=e.st;
+  $('iN').value=e.n;$('iW').value=e.w;$('iR').value=e.r;$('iS').value=e.s;
   $('exDel').style.display=i>=0?'':'none';$('sug').innerHTML='';$('dEx').showModal();
 }
 // Katalog: alle Übungen aus allen Plänen, eindeutig nach Name, jeweils zuletzt geänderte Variante
@@ -193,7 +205,7 @@ $('iN').oninput=()=>{
   $('sug').innerHTML=sugList.map((e,i)=>`<button type="button" data-s="${i}" class="${cur.has(e.n.trim().toLowerCase())?'in':''}">${esc(e.n)}<small>${fmt(e.w)} kg · ${fmt(e.s)}×${fmt(e.r)}</small></button>`).join('');
 };
 $('sug').onclick=ev=>{const b=ev.target.closest('[data-s]');if(!b)return;const e=sugList[+b.dataset.s];
-  $('iN').value=e.n;$('iW').value=e.w;$('iR').value=e.r;$('iS').value=e.s;$('iSt').value=e.st;$('sug').innerHTML='';};
+  $('iN').value=e.n;$('iW').value=e.w;$('iR').value=e.r;$('iS').value=e.s;$('sug').innerHTML='';};
 function openPl(i){
   editPl=i;$('plT').textContent=i>=0?'Plan bearbeiten':'Neuer Plan';
   $('iP').value=i>=0?D.plans[i].name:'';$('plDel').style.display=i>=0&&D.plans.length>1?'':'none';$('dPl').showModal();
@@ -203,7 +215,7 @@ document.querySelectorAll('.step button').forEach(b=>b.onclick=()=>{const f=$(b.
 $('fEx').onsubmit=()=>{
   const n=$('iN').value.trim();if(!n)return;const ex=D.plans[D.cur].ex;
   const e=editEx>=0?ex[editEx]:{h:[]};
-  Object.assign(e,{n,r:$('iR').value,s:$('iS').value,st:+$('iSt').value||2.5});
+  Object.assign(e,{n,r:$('iR').value,s:$('iS').value});
   setW(e,$('iW').value===''?'':+$('iW').value);
   if(editEx<0)ex.push(e);save();render();
 };
