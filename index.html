@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Training">
+<meta name="theme-color" content="#0f1115">
+<title>Trainingspläne</title>
+<style>
+:root{--bg:#f2f2f7;--card:#fff;--tx:#1c1c1e;--mu:#8e8e93;--ac:#0a84ff;--dn:#ff3b30;--bd:#e5e5ea}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#1c1c1e;--tx:#f2f2f7;--mu:#8e8e93;--bd:#2c2c2e}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;
+padding:env(safe-area-inset-top) 0 calc(90px + env(safe-area-inset-bottom));-webkit-user-select:none;user-select:none}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 16px 8px}
+h1{margin:0 0 10px;font-size:30px;font-weight:700}
+.tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:0;border-radius:18px;padding:8px 14px;background:var(--card);color:var(--tx);font-size:15px;font-weight:600}
+.tab.on{background:var(--ac);color:#fff}
+main{padding:4px 16px}
+.card{background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.n{font-size:17px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st{display:flex;gap:6px;margin-top:8px}
+.p{background:var(--bg);border-radius:8px;padding:4px 8px;font-size:14px;font-variant-numeric:tabular-nums}
+.p b{font-size:16px}
+.grow{flex:1;min-width:0}
+.ord{display:flex;flex-direction:column;gap:2px}
+.ord button{border:0;background:none;color:var(--mu);font-size:18px;width:36px;height:30px}
+.empty{text-align:center;color:var(--mu);padding:40px 20px}
+.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:30px;border:0;background:var(--ac);color:#fff;font-size:32px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.bar{display:flex;justify-content:space-between;color:var(--mu);font-size:14px;margin:4px 2px 10px}
+.bar button{border:0;background:none;color:var(--ac);font-size:15px;padding:4px 0}
+dialog{border:0;border-radius:18px 18px 0 0;padding:0;width:100%;max-width:100%;margin:auto 0 0;background:var(--card);color:var(--tx)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.sh{padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.sh h2{margin:0 0 14px;font-size:20px}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+input{width:100%;font-size:17px;padding:12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.step{display:flex;align-items:center;background:var(--bg);border:1px solid var(--bd);border-radius:10px}
+.step input{border:0;text-align:center;padding:12px 0;background:none;min-width:0}
+.step button{border:0;background:none;color:var(--ac);font-size:22px;width:34px;height:46px;flex:0 0 34px}
+.btns{display:flex;gap:10px;margin-top:18px}
+.btns button{flex:1;border:0;border-radius:12px;padding:14px;font-size:17px;font-weight:600}
+.pri{background:var(--ac);color:#fff}.sec{background:var(--bg);color:var(--tx)}.del{background:none;color:var(--dn);flex:0 0 auto!important}
+</style>
+</head>
+<body>
+<header><h1>Training</h1><div class="tabs" id="tabs"></div></header>
+<main id="main"></main>
+<button class="fab" id="fab" aria-label="Übung hinzufügen">+</button>
+
+<dialog id="dEx"><form class="sh" method="dialog" id="fEx">
+<h2 id="exT">Übung</h2>
+<label>Gerät / Übung</label><input id="iN" required autocomplete="off" placeholder="z. B. Beinpresse">
+<div class="row">
+<div><label>Gewicht (kg)</label><div class="step"><button type="button" data-f="iW" data-d="-2.5">−</button><input id="iW" type="number" inputmode="decimal" step="0.5" min="0"><button type="button" data-f="iW" data-d="2.5">+</button></div></div>
+<div><label>Wdh.</label><div class="step"><button type="button" data-f="iR" data-d="-1">−</button><input id="iR" type="number" inputmode="numeric" min="0"><button type="button" data-f="iR" data-d="1">+</button></div></div>
+<div><label>Sätze</label><div class="step"><button type="button" data-f="iS" data-d="-1">−</button><input id="iS" type="number" inputmode="numeric" min="0"><button type="button" data-f="iS" data-d="1">+</button></div></div>
+</div>
+<div class="btns"><button type="button" class="del" id="exDel">Löschen</button><button type="button" class="sec" id="exX">Abbrechen</button><button class="pri">Speichern</button></div>
+</form></dialog>
+
+<dialog id="dPl"><form class="sh" method="dialog" id="fPl">
+<h2 id="plT">Plan</h2>
+<label>Name</label><input id="iP" required autocomplete="off" placeholder="z. B. Push / Oberkörper">
+<div class="btns"><button type="button" class="del" id="plDel">Löschen</button><button type="button" class="sec" id="plX">Abbrechen</button><button class="pri">Speichern</button></div>
+</form></dialog>
+
+<script>
+const K='trainingsplaene_v1',$=id=>document.getElementById(id);
+let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
+if(!D||!D.plans||!D.plans.length)D={cur:0,plans:[{name:'Plan A',ex:[]}]};
+let editEx=-1,editPl=-1;
+const save=()=>localStorage.setItem(K,JSON.stringify(D));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>(n===''||n==null)?'–':String(n).replace('.',',');
+
+function render(){
+  if(D.cur>=D.plans.length)D.cur=0;
+  $('tabs').innerHTML=D.plans.map((p,i)=>`<button class="tab${i==D.cur?' on':''}" data-i="${i}">${esc(p.name)}</button>`).join('')+'<button class="tab" data-i="new">＋ Plan</button>';
+  const p=D.plans[D.cur];
+  $('main').innerHTML=`<div class="bar"><span>${p.ex.length} Übungen · ${p.ex.reduce((a,e)=>a+(+e.s||0),0)} Sätze</span><button id="plEd">Plan bearbeiten</button></div>`+
+  (p.ex.length?p.ex.map((e,i)=>`<div class="card" data-e="${i}"><div class="grow"><div class="n">${esc(e.n)}</div>
+  <div class="st"><span class="p"><b>${fmt(e.w)}</b> kg</span><span class="p"><b>${fmt(e.s)}</b> × <b>${fmt(e.r)}</b></span></div></div>
+  <div class="ord"><button data-m="-1" data-e="${i}">▲</button><button data-m="1" data-e="${i}">▼</button></div></div>`).join('')
+  :'<div class="empty">Noch keine Übungen.<br>Tippe auf ＋ um eine hinzuzufügen.</div>');
+  $('plEd').onclick=()=>openPl(D.cur);
+}
+$('tabs').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;if(i==='new')return openPl(-1);D.cur=+i;save();render()};
+$('main').onclick=e=>{
+  const m=e.target.dataset.m;
+  if(m){const ex=D.plans[D.cur].ex,i=+e.target.dataset.e,j=i+ +m;if(j<0||j>=ex.length)return;[ex[i],ex[j]]=[ex[j],ex[i]];save();render();return}
+  const c=e.target.closest('.card');if(c)openEx(+c.dataset.e);
+};
+function openEx(i){
+  editEx=i;const e=i>=0?D.plans[D.cur].ex[i]:{n:'',w:'',r:10,s:3};
+  $('exT').textContent=i>=0?'Übung bearbeiten':'Neue Übung';
+  $('iN').value=e.n;$('iW').value=e.w;$('iR').value=e.r;$('iS').value=e.s;
+  $('exDel').style.display=i>=0?'':'none';$('dEx').showModal();
+}
+function openPl(i){
+  editPl=i;$('plT').textContent=i>=0?'Plan bearbeiten':'Neuer Plan';
+  $('iP').value=i>=0?D.plans[i].name:'';$('plDel').style.display=i>=0&&D.plans.length>1?'':'none';$('dPl').showModal();
+}
+$('fab').onclick=()=>openEx(-1);
+document.querySelectorAll('.step button').forEach(b=>b.onclick=()=>{const f=$(b.dataset.f);f.value=Math.max(0,(+f.value||0)+ +b.dataset.d)});
+$('fEx').onsubmit=()=>{
+  const e={n:$('iN').value.trim(),w:$('iW').value,r:$('iR').value,s:$('iS').value};if(!e.n)return;
+  const ex=D.plans[D.cur].ex;editEx>=0?ex[editEx]=e:ex.push(e);save();render();
+};
+$('exDel').onclick=()=>{if(confirm('Übung löschen?')){D.plans[D.cur].ex.splice(editEx,1);save();render();$('dEx').close()}};
+$('exX').onclick=()=>$('dEx').close();
+$('fPl').onsubmit=()=>{
+  const n=$('iP').value.trim();if(!n)return;
+  if(editPl>=0)D.plans[editPl].name=n;else{D.plans.push({name:n,ex:[]});D.cur=D.plans.length-1}save();render();
+};
+$('plDel').onclick=()=>{if(confirm('Plan inkl. aller Übungen löschen?')){D.plans.splice(editPl,1);D.cur=0;save();render();$('dPl').close()}};
+$('plX').onclick=()=>$('dPl').close();
+render();
+</script>
+</body>
+</html>
