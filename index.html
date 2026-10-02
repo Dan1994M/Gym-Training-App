@@ -93,6 +93,7 @@ body{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .more{border:0;background:none;color:var(--mu);font-size:22px;width:34px;height:40px;flex:0 0 34px;padding:0}
 .tg{display:block;font-size:12px;color:#ff9f0a;margin-top:2px}.tg.sk{color:var(--mu)}
 .card.skp{opacity:.45}.card.skp .n{text-decoration:line-through}
+.wul{text-align:center;font-size:20px;font-weight:700;color:#ff9f0a;margin-top:30px}
 .addx{width:100%;border:2px dashed var(--bd);background:none;color:var(--ac);border-radius:14px;padding:14px;font-size:16px;font-weight:600}
 .calh{display:flex;align-items:center;justify-content:space-between;margin:2px 0 6px}.calh b{font-size:18px}
 .calh button{border:0;background:none;color:var(--ac);font-size:26px;width:44px;height:40px}
@@ -153,6 +154,11 @@ h3{font-size:20px;margin:18px 2px 10px}
 
 <dialog id="dSel"><div class="sh"><h2>Welcher Plan?</h2><div class="sel" id="selL"></div>
 <div class="btns"><button class="sec" id="selX">Abbrechen</button></div></div></dialog>
+
+<dialog id="dWu"><div class="sh"><h2>Warm-up?</h2><div class="cs" style="text-align:left;margin-bottom:14px" id="wuT"></div>
+<div class="sel"><button id="wuY">🔥 Ja, mit Warm-up starten<small>Eigener Timer, danach startet das Training</small></button>
+<button id="wuN">▶ Nein, direkt loslegen</button></div>
+<div class="btns"><button class="sec" id="wuX">Abbrechen</button></div></div></dialog>
 
 <dialog id="dOpt"><div class="sh"><h2 id="optT"></h2><div class="sel" id="optL"></div>
 <div class="btns"><button class="sec" id="optX">Abbrechen</button></div></div></dialog>
@@ -337,7 +343,10 @@ function openSel(){
   $('dSel').showModal()}
 $('selL').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;const i=+b.dataset.p;
   if(!D.plans[i].ex.length){alert('Der Plan enthält noch keine Übungen.');return}
-  D.cur=i;D.act={pn:D.plans[i].name,st:Date.now(),done:[]};save();$('dSel').close();showAct()};
+  D.cur=i;$('dSel').close();$('wuT').textContent=D.plans[i].name;$('dWu').showModal()};
+$('wuY').onclick=()=>{D.act={pn:D.plans[D.cur].name,wu:Date.now(),st:0,done:[]};save();$('dWu').close();showAct()};
+$('wuN').onclick=()=>{D.act={pn:D.plans[D.cur].name,st:Date.now(),done:[]};save();$('dWu').close();showAct()};
+$('wuX').onclick=()=>$('dWu').close();
 $('selX').onclick=()=>$('dSel').close();
 
 // Laufendes Training (Ausnahmen gelten nur für diese Einheit, Plan bleibt unverändert)
@@ -349,9 +358,18 @@ function items(){const p=actPlan(),A=D.act;actFix();
   A.xtra.forEach((e,j)=>l.push({id:'#'+j,xi:j,e,t:'x'}));return l}
 const cnt=()=>{const l=items().filter(x=>x.t!=='skip'),d=new Set(D.act.done);return{n:l.filter(x=>d.has(x.id)).length,t:l.length}};
 function showAct(){
+  if(D.act.wu&&!D.act.st){const p=actPlan(),A=D.act;
+    $('act').innerHTML=`<div class="ah"><h2 style="color:${col(p.name)}">${esc(p.name)}</h2><button id="aX">Verwerfen</button></div>
+    <div class="wul">🔥 Warm-up</div><div class="clk" id="clk" style="color:#ff9f0a">${hms(Date.now()-A.wu)}</div><div class="cs">Start ${hm(A.wu)} Uhr</div>
+    <div class="cs" style="margin-top:24px">Danach: ${p.ex.length} Übungen</div>
+    <div class="actb"><button id="wuEnd" style="flex:1;background:var(--ok)">Warm-up beenden ▶ Training starten</button></div>`;
+    $('act').hidden=false;document.body.style.overflow='hidden';
+    $('aX').onclick=()=>{if(confirm('Training verwerfen? Es wird nicht gespeichert.')){D.act=null;save();hideAct()}};
+    $('wuEnd').onclick=()=>{A.st=Date.now();A.wd=A.st-A.wu;navigator.vibrate&&navigator.vibrate(30);save();showAct()};
+    clearInterval(tick);tick=setInterval(()=>{const c=$('clk');c&&(c.textContent=hms(Date.now()-A.wu))},1000);return}
   const p=actPlan(),A=D.act,L=items(),dn=new Set(A.done),{n,t}=cnt(),lr=A.lr;
   $('act').innerHTML=`<div class="ah"><h2 style="color:${col(p.name)}">${esc(p.name)}</h2><button id="aX">Verwerfen</button></div>
-  <div class="clk" id="clk">${hms(Date.now()-A.st)}</div><div class="cs">Start ${hm(A.st)} Uhr · ${n}/${t} erledigt</div>
+  <div class="clk" id="clk">${hms(Date.now()-A.st)}</div><div class="cs">Start ${hm(A.st)} Uhr · ${n}/${t} erledigt${A.wd?` · Warm-up ${mins(A.wd)}`:''}</div>
   <div class="prog"><i style="width:${t?n/t*100:0}%"></i></div>`+
   L.map((x,i)=>{const ok=dn.has(x.id)&&x.t!=='skip',e=x.e,tag=x.t==='rep'?`<small class="tg">statt ${esc(x.o)}</small>`:x.t==='x'?'<small class="tg">Zusatz</small>':x.t==='skip'?'<small class="tg sk">übersprungen</small>':'';
     return `<div class="card${ok?' ok':''}${x.t==='skip'?' skp':''}" data-c="${i}"><div class="chk">${ok?'✓':x.t==='skip'?'–':''}</div>
@@ -403,7 +421,7 @@ function endAct(){
   const A=D.act,p=actPlan(),{n,t}=cnt(),en=Date.now();
   if(!confirm(`Training beenden?\n${mins(en-A.st)} · ${n}/${t} Übungen`))return;
   const L=items();
-  D.sess.push({pn:p.name,st:A.st,en,done:n,tot:t,sk:A.skip.length,ch:L.filter(x=>x.t==='rep').map(x=>x.o+' → '+x.e.n),xt:A.xtra.map(e=>e.n)});
+  D.sess.push({pn:p.name,st:A.st,en,done:n,tot:t,sk:A.skip.length,ch:L.filter(x=>x.t==='rep').map(x=>x.o+' → '+x.e.n),xt:A.xtra.map(e=>e.n),...(A.wd?{wu:A.wd}:{})});
   D.act=null;save();hideAct();const d=new Date();calY=d.getFullYear();calM=d.getMonth();setView('t')}
 
 // Kalender & Auswertung
@@ -447,7 +465,7 @@ function renderT(){
   $('cP').onclick=()=>{calM--;if(calM<0){calM=11;calY--}renderT()};$('cN').onclick=()=>{calM++;if(calM>11){calM=0;calY++}renderT()};
   $('cal').onclick=e=>{const c=e.target.closest('[data-day]');c&&openDay(c.dataset.day)};
 }
-function sessLi(x){const i=D.sess.indexOf(x);return `<li><i style="background:${col(x.pn)}"></i><div><b>${esc(x.pn)}</b><small>${dfm(dk(x.st))} · ${hm(x.st)}–${hm(x.en)} · ${mins(x.en-x.st)} · ${x.done}/${x.tot}${x.ch&&x.ch.length?'<br>🔁 '+x.ch.map(esc).join(', '):''}${x.sk?'<br>⏭ '+x.sk+' übersprungen':''}${x.xt&&x.xt.length?'<br>＋ '+x.xt.map(esc).join(', '):''}</small></div><button data-del="${i}">×</button></li>`}
+function sessLi(x){const i=D.sess.indexOf(x);return `<li><i style="background:${col(x.pn)}"></i><div><b>${esc(x.pn)}</b><small>${dfm(dk(x.st))} · ${hm(x.st)}–${hm(x.en)} · ${mins(x.en-x.st)} · ${x.done}/${x.tot}${x.wu?'<br>🔥 Warm-up '+mins(x.wu):''}${x.ch&&x.ch.length?'<br>🔁 '+x.ch.map(esc).join(', '):''}${x.sk?'<br>⏭ '+x.sk+' übersprungen':''}${x.xt&&x.xt.length?'<br>＋ '+x.xt.map(esc).join(', '):''}</small></div><button data-del="${i}">×</button></li>`}
 let dayK='';
 function openDay(k){dayK=k;const l=D.sess.filter(x=>dk(x.st)===k);if(!l.length){$('dDay').open&&$('dDay').close();return}
   const d=new Date(k+'T12:00');$('dayT').textContent=WD[d.getDay()]+', '+dfm(k);$('dayL').innerHTML=l.map(sessLi).join('');$('dDay').open||$('dDay').showModal()}
