@@ -87,7 +87,13 @@ body{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .wq{background:var(--bg);border-radius:10px;padding:8px 10px;font-size:14px;font-variant-numeric:tabular-nums;text-decoration:underline dotted var(--mu);text-underline-offset:4px}
 .wq b{font-size:16px}
 .actb{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:21}
-.actb button{width:100%;border:0;border-radius:14px;padding:17px;font-size:18px;font-weight:700;background:var(--dn);color:#fff}
+.actb{display:flex;gap:10px}.actb button{border:0;border-radius:14px;padding:17px 12px;font-size:17px;font-weight:700;color:#fff}
+#aRest{flex:1.4;background:var(--ac);font-variant-numeric:tabular-nums}#aRest.on{background:#ff9f0a}#aRest small{font-weight:400;opacity:.85}
+#aEnd{flex:1;background:var(--dn)}
+.more{border:0;background:none;color:var(--mu);font-size:22px;width:34px;height:40px;flex:0 0 34px;padding:0}
+.tg{display:block;font-size:12px;color:#ff9f0a;margin-top:2px}.tg.sk{color:var(--mu)}
+.card.skp{opacity:.45}.card.skp .n{text-decoration:line-through}
+.addx{width:100%;border:2px dashed var(--bd);background:none;color:var(--ac);border-radius:14px;padding:14px;font-size:16px;font-weight:600}
 .calh{display:flex;align-items:center;justify-content:space-between;margin:2px 0 6px}.calh b{font-size:18px}
 .calh button{border:0;background:none;color:var(--ac);font-size:26px;width:44px;height:40px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:var(--card);border-radius:14px;padding:10px}
@@ -147,6 +153,16 @@ h3{font-size:20px;margin:18px 2px 10px}
 
 <dialog id="dSel"><div class="sh"><h2>Welcher Plan?</h2><div class="sel" id="selL"></div>
 <div class="btns"><button class="sec" id="selX">Abbrechen</button></div></div></dialog>
+
+<dialog id="dOpt"><div class="sh"><h2 id="optT"></h2><div class="sel" id="optL"></div>
+<div class="btns"><button class="sec" id="optX">Abbrechen</button></div></div></dialog>
+
+<dialog id="dRp"><form class="sh" method="dialog" id="fRp"><h2 id="rpT"></h2>
+<label>Übung</label><input id="rN" required autocomplete="off" placeholder="Name oder aus Katalog wählen"><div class="sug" id="rSug"></div>
+<div class="row"><div><label>Gewicht (kg)</label><input id="rW" type="text" inputmode="decimal"></div>
+<div><label>Wdh.</label><input id="rR" type="number" inputmode="numeric"></div><div><label>Sätze</label><input id="rS" type="number" inputmode="numeric"></div></div>
+<div class="cs" style="margin-top:12px;text-align:left">Gilt nur für dieses Training – dein Plan bleibt unverändert.</div>
+<div class="btns"><button type="button" class="sec" id="rpX">Abbrechen</button><button class="pri">Übernehmen</button></div></form></dialog>
 
 <dialog id="dDay"><div class="sh"><h2 id="dayT"></h2><ul class="sl" id="dayL"></ul>
 <div class="btns"><button class="sec" id="dayX">Schließen</button></div></div></dialog>
@@ -295,7 +311,7 @@ $('plDel').onclick=()=>{if(confirm('Plan inkl. aller Übungen löschen?')){D.pla
 $('plX').onclick=()=>$('dPl').close();
 
 // ===== Training-Tracking =====
-D.sess=D.sess||[];D.act=D.act||null;
+D.sess=D.sess||[];D.act=D.act||null;D.sess.forEach(x=>{delete x.rp;delete x.rc});
 let view='p',calY,calM,tick=null;
 const PAL=['#0a84ff','#ff9f0a','#bf5af2','#34c759','#ff375f','#64d2ff','#ffd60a','#ac8e68'];
 const col=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))>>>0;return PAL[h%PAL.length]};
@@ -324,31 +340,71 @@ $('selL').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;const i=
   D.cur=i;D.act={pn:D.plans[i].name,st:Date.now(),done:[]};save();$('dSel').close();showAct()};
 $('selX').onclick=()=>$('dSel').close();
 
-// Laufendes Training
+// Laufendes Training (Ausnahmen gelten nur für diese Einheit, Plan bleibt unverändert)
 function actPlan(){let i=D.plans.findIndex(p=>p.name===D.act.pn);if(i<0)i=Math.min(D.cur,D.plans.length-1);D.cur=i;return D.plans[i]}
+function actFix(){const A=D.act;A.skip=A.skip||[];A.rep=A.rep||{};A.xtra=A.xtra||[];delete A.rests}
+function items(){const p=actPlan(),A=D.act;actFix();
+  const l=p.ex.map((e,i)=>{const k=key(e),r=A.rep[k];
+    return A.skip.includes(k)?{id:k,pi:i,e,t:'skip'}:r?{id:k,pi:i,e:r,o:e.n,t:'rep'}:{id:k,pi:i,e,t:'plan'}});
+  A.xtra.forEach((e,j)=>l.push({id:'#'+j,xi:j,e,t:'x'}));return l}
+const cnt=()=>{const l=items().filter(x=>x.t!=='skip'),d=new Set(D.act.done);return{n:l.filter(x=>d.has(x.id)).length,t:l.length}};
 function showAct(){
-  const p=actPlan(),dn=new Set(D.act.done),n=p.ex.filter(e=>dn.has(key(e))).length;
+  const p=actPlan(),A=D.act,L=items(),dn=new Set(A.done),{n,t}=cnt(),lr=A.lr;
   $('act').innerHTML=`<div class="ah"><h2 style="color:${col(p.name)}">${esc(p.name)}</h2><button id="aX">Verwerfen</button></div>
-  <div class="clk" id="clk">${hms(Date.now()-D.act.st)}</div><div class="cs">Start ${hm(D.act.st)} Uhr · ${n}/${p.ex.length} erledigt</div>
-  <div class="prog"><i style="width:${p.ex.length?n/p.ex.length*100:0}%"></i></div>`+
-  p.ex.map((e,i)=>`<div class="card${dn.has(key(e))?' ok':''}" data-c="${i}"><div class="chk">${dn.has(key(e))?'✓':''}</div>
-  <div class="grow"><div class="n">${esc(e.n)}</div></div><span class="wq" data-w="${i}"><b>${fmt(e.w)}</b> kg</span><span class="p"><b>${fmt(e.s)}</b>×<b>${fmt(e.r)}</b></span></div>`).join('')+
-  `<div class="actb"><button id="aEnd">Training beenden</button></div>`;
+  <div class="clk" id="clk">${hms(Date.now()-A.st)}</div><div class="cs">Start ${hm(A.st)} Uhr · ${n}/${t} erledigt</div>
+  <div class="prog"><i style="width:${t?n/t*100:0}%"></i></div>`+
+  L.map((x,i)=>{const ok=dn.has(x.id)&&x.t!=='skip',e=x.e,tag=x.t==='rep'?`<small class="tg">statt ${esc(x.o)}</small>`:x.t==='x'?'<small class="tg">Zusatz</small>':x.t==='skip'?'<small class="tg sk">übersprungen</small>':'';
+    return `<div class="card${ok?' ok':''}${x.t==='skip'?' skp':''}" data-c="${i}"><div class="chk">${ok?'✓':x.t==='skip'?'–':''}</div>
+    <div class="grow"><div class="n">${esc(e.n)}</div>${tag}</div>${x.t==='skip'?'':`<span class="wq" data-w="${i}"><b>${fmt(e.w)}</b> kg</span><span class="p"><b>${fmt(e.s)}</b>×<b>${fmt(e.r)}</b></span>`}
+    <button class="more" data-o="${i}" aria-label="Optionen">⋯</button></div>`}).join('')+
+  `<button class="addx" id="aAdd">＋ Zusätzliche Übung</button>
+  <div class="actb"><button id="aRest" class="${A.rs?'on':''}">${A.rs?`⏸ <span id="rclk">${hms(Date.now()-A.rs)}</span> · Stopp`:`⏱ Pause${lr?` <small>(${hms(lr)})</small>`:''}`}</button><button id="aEnd">Beenden</button></div>`;
   $('act').hidden=false;document.body.style.overflow='hidden';
   $('aX').onclick=()=>{if(confirm('Training verwerfen? Es wird nicht gespeichert.')){D.act=null;save();hideAct()}};
-  $('aEnd').onclick=endAct;
-  clearInterval(tick);tick=setInterval(()=>{const c=$('clk');c&&(c.textContent=hms(Date.now()-D.act.st))},1000);
+  $('aEnd').onclick=endAct;$('aAdd').onclick=()=>openRp('x',-1);
+  $('aRest').onclick=()=>{if(A.rs){A.lr=Date.now()-A.rs;A.rs=0}else A.rs=Date.now();navigator.vibrate&&navigator.vibrate(15);save();showAct()};
+  clearInterval(tick);tick=setInterval(()=>{const c=$('clk');c&&(c.textContent=hms(Date.now()-A.st));const r=$('rclk');r&&A.rs&&(r.textContent=hms(Date.now()-A.rs))},1000);
 }
 function hideAct(){clearInterval(tick);$('act').hidden=true;document.body.style.overflow='';view==='t'?renderT():render()}
-$('act').onclick=ev=>{
-  const w=ev.target.closest('[data-w]');if(w){openWq(+w.dataset.w);return}
-  const c=ev.target.closest('[data-c]');if(!c)return;const e=D.plans[D.cur].ex[+c.dataset.c],k=key(e),i=D.act.done.indexOf(k);
-  i<0?D.act.done.push(k):D.act.done.splice(i,1);navigator.vibrate&&navigator.vibrate(10);save();showAct()};
+let optI=-1;
+$('act').onclick=ev=>{if(!D.act)return;const L=items();
+  const o=ev.target.closest('[data-o]');if(o){openOpt(+o.dataset.o);return}
+  const w=ev.target.closest('[data-w]');if(w){const x=L[+w.dataset.w];x.t==='plan'?openWq(x.pi):openRp(x.t==='x'?'x':'rep',x.t==='x'?x.xi:x.id);return}
+  const c=ev.target.closest('[data-c]');if(!c)return;const x=L[+c.dataset.c];if(x.t==='skip'){openOpt(+c.dataset.c);return}
+  const i=D.act.done.indexOf(x.id);i<0?D.act.done.push(x.id):D.act.done.splice(i,1);navigator.vibrate&&navigator.vibrate(10);save();showAct()};
+function openOpt(i){optI=i;const x=items()[i];$('optT').textContent=x.e.n;
+  const b=[];
+  if(x.t==='plan')b.push(['rep','🔁 Ersetzen (nur heute)'],['skip','⏭ Überspringen (nur heute)']);
+  if(x.t==='rep')b.push(['rep','✏️ Ersatzübung ändern'],['undo','↩︎ Original wiederherstellen'],['skip','⏭ Überspringen (nur heute)']);
+  if(x.t==='skip')b.push(['undo','↩︎ Doch machen']);
+  if(x.t==='x')b.push(['rep','✏️ Bearbeiten'],['delx','🗑 Zusatzübung entfernen']);
+  $('optL').innerHTML=b.map(([a,l])=>`<button data-a="${a}">${l}</button>`).join('');$('dOpt').showModal()}
+$('optL').onclick=ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const x=items()[optI],A=D.act,a=b.dataset.a;$('dOpt').close();
+  const undone=id=>{const k=A.done.indexOf(id);k>=0&&A.done.splice(k,1)};
+  if(a==='rep'){openRp(x.t==='x'?'x':'rep',x.t==='x'?x.xi:x.id);return}
+  if(a==='skip'){delete A.rep[x.id];A.skip.push(x.id);undone(x.id)}
+  if(a==='undo'){A.skip=A.skip.filter(k=>k!==x.id);delete A.rep[x.id];undone(x.id)}
+  if(a==='delx'){A.xtra.splice(x.xi,1);A.done=A.done.filter(d=>d!=='#'+x.xi).map(d=>d[0]==='#'&&+d.slice(1)>x.xi?'#'+(d.slice(1)-1):d)}
+  save();showAct()};
+$('optX').onclick=()=>$('dOpt').close();
+// Ersatz-/Zusatzübung: Daten nur in der laufenden Einheit
+let rpM,rpK,rpSug=[];
+function openRp(m,k){rpM=m;rpK=k;const A=D.act,e=m==='rep'?A.rep[k]:(k>=0?A.xtra[k]:null);
+  $('rpT').textContent=m==='rep'?(e?'Ersatzübung':'Ersetzen: '+items().find(x=>x.id===k).e.n):(k>=0?'Zusatzübung':'Zusätzliche Übung');
+  $('rN').value=e?e.n:'';$('rW').value=e?e.w:'';$('rR').value=e?e.r:10;$('rS').value=e?e.s:3;$('rSug').innerHTML='';$('dRp').showModal();setTimeout(()=>$('rN').focus(),50)}
+$('rN').oninput=()=>{const q=$('rN').value.trim().toLowerCase();if(!q){$('rSug').innerHTML='';return}
+  rpSug=catalog().filter(e=>e.n.toLowerCase().includes(q)&&e.n.toLowerCase()!==q).slice(0,6);
+  $('rSug').innerHTML=rpSug.map((e,i)=>`<button type="button" data-s="${i}">${esc(e.n)}<small>${fmt(e.w)} kg · ${fmt(e.r)} Wdh.</small></button>`).join('')};
+$('rSug').onclick=ev=>{const b=ev.target.closest('[data-s]');if(!b)return;const e=rpSug[+b.dataset.s];$('rN').value=e.n;$('rW').value=e.w;$('rR').value=e.r;$('rS').value=e.s;$('rSug').innerHTML=''};
+$('fRp').onsubmit=()=>{const n=$('rN').value.trim();if(!n)return;const e={n,w:$('rW').value===''?'':+$('rW').value.replace(',','.'),r:$('rR').value,s:$('rS').value},A=D.act;
+  if(rpM==='rep')A.rep[rpK]=e;else rpK>=0?A.xtra[rpK]=e:A.xtra.push(e);save();showAct()};
+$('rpX').onclick=()=>$('dRp').close();
 function endAct(){
-  const p=actPlan(),dn=new Set(D.act.done),n=p.ex.filter(e=>dn.has(key(e))).length,en=Date.now();
-  if(!confirm(`Training beenden?\n${mins(en-D.act.st)} · ${n}/${p.ex.length} Übungen`))return;
-  D.sess.push({pn:p.name,st:D.act.st,en,done:n,tot:p.ex.length});D.act=null;save();hideAct();
-  const d=new Date();calY=d.getFullYear();calM=d.getMonth();setView('t')}
+  const A=D.act,p=actPlan(),{n,t}=cnt(),en=Date.now();
+  if(!confirm(`Training beenden?\n${mins(en-A.st)} · ${n}/${t} Übungen`))return;
+  const L=items();
+  D.sess.push({pn:p.name,st:A.st,en,done:n,tot:t,sk:A.skip.length,ch:L.filter(x=>x.t==='rep').map(x=>x.o+' → '+x.e.n),xt:A.xtra.map(e=>e.n)});
+  D.act=null;save();hideAct();const d=new Date();calY=d.getFullYear();calM=d.getMonth();setView('t')}
 
 // Kalender & Auswertung
 function renderT(){
@@ -391,7 +447,7 @@ function renderT(){
   $('cP').onclick=()=>{calM--;if(calM<0){calM=11;calY--}renderT()};$('cN').onclick=()=>{calM++;if(calM>11){calM=0;calY++}renderT()};
   $('cal').onclick=e=>{const c=e.target.closest('[data-day]');c&&openDay(c.dataset.day)};
 }
-function sessLi(x){const i=D.sess.indexOf(x);return `<li><i style="background:${col(x.pn)}"></i><div><b>${esc(x.pn)}</b><small>${dfm(dk(x.st))} · ${hm(x.st)}–${hm(x.en)} · ${mins(x.en-x.st)} · ${x.done}/${x.tot}</small></div><button data-del="${i}">×</button></li>`}
+function sessLi(x){const i=D.sess.indexOf(x);return `<li><i style="background:${col(x.pn)}"></i><div><b>${esc(x.pn)}</b><small>${dfm(dk(x.st))} · ${hm(x.st)}–${hm(x.en)} · ${mins(x.en-x.st)} · ${x.done}/${x.tot}${x.ch&&x.ch.length?'<br>🔁 '+x.ch.map(esc).join(', '):''}${x.sk?'<br>⏭ '+x.sk+' übersprungen':''}${x.xt&&x.xt.length?'<br>＋ '+x.xt.map(esc).join(', '):''}</small></div><button data-del="${i}">×</button></li>`}
 let dayK='';
 function openDay(k){dayK=k;const l=D.sess.filter(x=>dk(x.st)===k);if(!l.length){$('dDay').open&&$('dDay').close();return}
   const d=new Date(k+'T12:00');$('dayT').textContent=WD[d.getDay()]+', '+dfm(k);$('dayL').innerHTML=l.map(sessLi).join('');$('dDay').open||$('dDay').showModal()}
