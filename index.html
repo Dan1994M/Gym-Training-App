@@ -11,6 +11,7 @@
 <style>
 :root{--bg:#f2f2f7;--card:#fff;--tx:#1c1c1e;--mu:#8e8e93;--ac:#0a84ff;--dn:#ff3b30;--ok:#34c759;--bd:#e5e5ea}
 @media(prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#1c1c1e;--tx:#f2f2f7;--bd:#2c2c2e}}
+[hidden]{display:none!important}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;
 padding:env(safe-area-inset-top) 0 calc(90px + env(safe-area-inset-bottom));-webkit-user-select:none;user-select:none}
@@ -67,11 +68,58 @@ svg{width:100%;height:auto;display:block;background:var(--bg);border-radius:10px
 .sug button small{color:var(--mu);margin-left:4px}
 .sug button.in{opacity:.45}
 .hl button{border:0;background:none;color:var(--mu);font-size:18px;width:32px}
+
+body{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+.fab{bottom:calc(76px + env(safe-area-inset-bottom))}
+.nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom);z-index:10}
+.nav button{flex:1;border:0;background:none;color:var(--mu);font-size:22px;padding:8px 0 6px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav span{font-size:11px;font-weight:600}.nav .on{color:var(--ac)}
+.big{width:100%;border:0;border-radius:14px;padding:18px;font-size:18px;font-weight:700;background:var(--ok);color:#fff;margin:4px 0 14px}
+#act{position:fixed;inset:0;background:var(--bg);z-index:20;overflow-y:auto;padding:calc(12px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom))}
+.ah{display:flex;justify-content:space-between;align-items:center}.ah h2{margin:0;font-size:22px}
+.ah button{border:0;background:none;color:var(--dn);font-size:15px}
+.clk{font-size:60px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin:6px 0 2px;letter-spacing:-1px}
+.cs{text-align:center;color:var(--mu);font-size:14px;margin-bottom:10px}
+.prog{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin-bottom:14px}.prog i{display:block;height:100%;background:var(--ok);transition:width .3s}
+.chk{width:34px;height:34px;border-radius:17px;border:2px solid var(--bd);flex:0 0 34px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700}
+.card.ok .chk{background:var(--ok);border-color:var(--ok)}.card.ok .n{text-decoration:line-through;color:var(--mu)}
+.card.ok{opacity:.75}
+.wq{background:var(--bg);border-radius:10px;padding:8px 10px;font-size:14px;font-variant-numeric:tabular-nums;text-decoration:underline dotted var(--mu);text-underline-offset:4px}
+.wq b{font-size:16px}
+.actb{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:21}
+.actb button{width:100%;border:0;border-radius:14px;padding:17px;font-size:18px;font-weight:700;background:var(--dn);color:#fff}
+.calh{display:flex;align-items:center;justify-content:space-between;margin:2px 0 6px}.calh b{font-size:18px}
+.calh button{border:0;background:none;color:var(--ac);font-size:26px;width:44px;height:40px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:var(--card);border-radius:14px;padding:10px}
+.cal div{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;font-size:15px;font-variant-numeric:tabular-nums}
+.cal .h{aspect-ratio:auto;color:var(--mu);font-size:12px;padding:2px 0}
+.cal .has{background:var(--bg);font-weight:700}.cal .td{box-shadow:inset 0 0 0 2px var(--ac)}.cal .fu{color:var(--mu);opacity:.5}
+.dots{display:flex;gap:2px;height:6px;margin-top:3px}.dots i{width:6px;height:6px;border-radius:3px}
+.leg{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--mu);margin:8px 2px 14px}.leg i{display:inline-block;width:8px;height:8px;border-radius:4px;margin-right:5px}
+#vT .kp div{background:var(--card)}
+h3{font-size:20px;margin:18px 2px 10px}
+.kp.k2{grid-template-columns:repeat(2,1fr)}
+.dist{background:var(--card);border-radius:14px;padding:12px 14px}
+.dist div{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:14px}.dist span{width:34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dist em{flex:1;height:10px;background:var(--bg);border-radius:5px;overflow:hidden}.dist em i{display:block;height:100%}
+.dist b{width:28px;text-align:right;font-variant-numeric:tabular-nums}
+.wb{display:flex;align-items:flex-end;gap:4px;height:90px;background:var(--card);border-radius:14px;padding:12px 10px 22px;position:relative}
+.wb div{flex:1;background:var(--ac);border-radius:4px 4px 0 0;min-height:2px;position:relative}
+.wb div.z{background:var(--bd)}.wb div span{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--mu);white-space:nowrap}
+.sl{list-style:none;margin:0;padding:0}
+.sl li{background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;font-variant-numeric:tabular-nums}
+.sl li i{width:10px;height:10px;border-radius:5px;flex:0 0 10px}.sl li div{flex:1;min-width:0}.sl li small{color:var(--mu);display:block;font-size:13px}
+.sl li button{border:0;background:none;color:var(--mu);font-size:18px;width:32px}
+.sel button{display:block;width:100%;text-align:left;border:0;border-radius:12px;padding:15px 16px;margin-bottom:8px;background:var(--bg);color:var(--tx);font-size:17px;font-weight:600}
+.sel small{display:block;color:var(--mu);font-weight:400;font-size:13px;margin-top:2px}
 </style>
 </head>
 <body>
-<header><h1>Training</h1><div class="tabs" id="tabs"></div></header>
+<header><h1 id="h1">Pläne</h1><div class="tabs" id="tabs"></div></header>
 <main id="main"></main>
+<main id="vT" hidden></main>
+<div id="act" hidden></div>
+<nav class="nav" id="nav"><button data-v="p" class="on">🏋️<span>Pläne</span></button><button data-v="t">📅<span>Training</span></button></nav>
 <button class="fab" id="fab" aria-label="Übung hinzufügen">+</button>
 
 <dialog id="dEx"><form class="sh" method="dialog" id="fEx">
@@ -96,6 +144,12 @@ svg{width:100%;height:auto;display:block;background:var(--bg);border-radius:10px
 <input id="iWq" type="text" inputmode="decimal" autocomplete="off" style="font-size:28px;text-align:center">
 <div class="btns"><button type="button" class="sec" id="wqX">Abbrechen</button><button class="pri">Übernehmen</button></div>
 </form></dialog>
+
+<dialog id="dSel"><div class="sh"><h2>Welcher Plan?</h2><div class="sel" id="selL"></div>
+<div class="btns"><button class="sec" id="selX">Abbrechen</button></div></div></dialog>
+
+<dialog id="dDay"><div class="sh"><h2 id="dayT"></h2><ul class="sl" id="dayL"></ul>
+<div class="btns"><button class="sec" id="dayX">Schließen</button></div></div></dialog>
 
 <dialog id="dDet"><div class="sh">
 <h2 id="dtT"></h2>
@@ -156,7 +210,7 @@ $('main').onclick=ev=>{
   const t=ev.target.closest('button,[data-d],[data-w]');if(!t)return;const ex=D.plans[D.cur].ex;
   if(t.dataset.q){const i=+t.dataset.e,e=ex[i];setW(e,(+e.w||0)+ +t.dataset.q);sync(e);save();render();
     const s=$('w'+i);s.classList.add('flash');navigator.vibrate&&navigator.vibrate(10);return}
-  if(t.dataset.w!=null){const i=+t.dataset.w;wEx=i;$('iWq').value=ex[i].w===''?'':String(ex[i].w).replace('.',',');$('wqT').textContent=ex[i].n;$('dW').showModal();setTimeout(()=>{$('iWq').focus();$('iWq').select()},50);return}
+  if(t.dataset.w!=null){openWq(+t.dataset.w);return}
   if(t.dataset.m){const i=+t.dataset.e,j=i+ +t.dataset.m;if(j<0||j>=ex.length)return;[ex[i],ex[j]]=[ex[j],ex[i]];save();render();return}
   if(t.dataset.d!=null)openDet(+t.dataset.d);
 };
@@ -189,7 +243,8 @@ $('dtL').onclick=ev=>{const k=ev.target.dataset.h;if(k==null)return;const e=D.pl
 let wEx=-1;
 $('fW').onsubmit=ev=>{const v=$('iWq').value.trim().replace(',','.');
   if(v===''||isNaN(+v)){ev.preventDefault();$('iWq').focus();return}
-  {const e=D.plans[D.cur].ex[wEx];setW(e,+v);sync(e)}save();render();const s=$('w'+wEx);s&&s.classList.add('flash')};
+  {const e=D.plans[D.cur].ex[wEx];setW(e,+v);sync(e)}save();render();D.act&&showAct();const s=$('w'+wEx);s&&s.classList.add('flash')};
+function openWq(i){const e=D.plans[D.cur].ex[i];wEx=i;$('iWq').value=e.w===''?'':String(e.w).replace('.',',');$('wqT').textContent=e.n;$('dW').showModal();setTimeout(()=>{$('iWq').focus();$('iWq').select()},50)}
 $('wqX').onclick=()=>$('dW').close();
 $('dtX').onclick=()=>$('dDet').close();
 $('dtE').onclick=()=>{$('dDet').close();openEx(detEx)};
@@ -238,7 +293,112 @@ $('fPl').onsubmit=()=>{
 };
 $('plDel').onclick=()=>{if(confirm('Plan inkl. aller Übungen löschen?')){D.plans.splice(editPl,1);D.cur=0;save();render();$('dPl').close()}};
 $('plX').onclick=()=>$('dPl').close();
-save();render();
+
+// ===== Training-Tracking =====
+D.sess=D.sess||[];D.act=D.act||null;
+let view='p',calY,calM,tick=null;
+const PAL=['#0a84ff','#ff9f0a','#bf5af2','#34c759','#ff375f','#64d2ff','#ffd60a','#ac8e68'];
+const col=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))>>>0;return PAL[h%PAL.length]};
+const dk=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const hms=ms=>{const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s%60).padStart(2,'0')};
+const mins=ms=>{const m=Math.round(ms/6e4);return m>=60?Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min':m+' min'};
+const hm=t=>new Date(t).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+const wk=t=>{const d=new Date(t);d.setHours(0,0,0,0);d.setDate(d.getDate()-(d.getDay()+6)%7);return +d};
+const prevWk=w=>{const d=new Date(w);d.setDate(d.getDate()-7);return +d};
+const WD=['So','Mo','Di','Mi','Do','Fr','Sa'];
+const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+function setView(v){view=v;
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  $('main').hidden=v!=='p';$('tabs').hidden=v!=='p';$('fab').hidden=v!=='p';$('vT').hidden=v!=='t';
+  $('h1').textContent=v==='p'?'Pläne':'Training';v==='t'?renderT():render();scrollTo(0,0)}
+$('nav').onclick=e=>{const b=e.target.closest('[data-v]');b&&setView(b.dataset.v)};
+
+// Start
+function openSel(){
+  $('selL').innerHTML=D.plans.map((p,i)=>{const l=D.sess.filter(x=>x.pn===p.name).pop();
+    return `<button data-p="${i}"><span style="color:${col(p.name)}">●</span> ${esc(p.name)}<small>${p.ex.length} Übungen${l?' · zuletzt '+ago(dk(l.st)):''}</small></button>`}).join('');
+  $('dSel').showModal()}
+$('selL').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;const i=+b.dataset.p;
+  if(!D.plans[i].ex.length){alert('Der Plan enthält noch keine Übungen.');return}
+  D.cur=i;D.act={pn:D.plans[i].name,st:Date.now(),done:[]};save();$('dSel').close();showAct()};
+$('selX').onclick=()=>$('dSel').close();
+
+// Laufendes Training
+function actPlan(){let i=D.plans.findIndex(p=>p.name===D.act.pn);if(i<0)i=Math.min(D.cur,D.plans.length-1);D.cur=i;return D.plans[i]}
+function showAct(){
+  const p=actPlan(),dn=new Set(D.act.done),n=p.ex.filter(e=>dn.has(key(e))).length;
+  $('act').innerHTML=`<div class="ah"><h2 style="color:${col(p.name)}">${esc(p.name)}</h2><button id="aX">Verwerfen</button></div>
+  <div class="clk" id="clk">${hms(Date.now()-D.act.st)}</div><div class="cs">Start ${hm(D.act.st)} Uhr · ${n}/${p.ex.length} erledigt</div>
+  <div class="prog"><i style="width:${p.ex.length?n/p.ex.length*100:0}%"></i></div>`+
+  p.ex.map((e,i)=>`<div class="card${dn.has(key(e))?' ok':''}" data-c="${i}"><div class="chk">${dn.has(key(e))?'✓':''}</div>
+  <div class="grow"><div class="n">${esc(e.n)}</div></div><span class="wq" data-w="${i}"><b>${fmt(e.w)}</b> kg</span><span class="p"><b>${fmt(e.s)}</b>×<b>${fmt(e.r)}</b></span></div>`).join('')+
+  `<div class="actb"><button id="aEnd">Training beenden</button></div>`;
+  $('act').hidden=false;document.body.style.overflow='hidden';
+  $('aX').onclick=()=>{if(confirm('Training verwerfen? Es wird nicht gespeichert.')){D.act=null;save();hideAct()}};
+  $('aEnd').onclick=endAct;
+  clearInterval(tick);tick=setInterval(()=>{const c=$('clk');c&&(c.textContent=hms(Date.now()-D.act.st))},1000);
+}
+function hideAct(){clearInterval(tick);$('act').hidden=true;document.body.style.overflow='';view==='t'?renderT():render()}
+$('act').onclick=ev=>{
+  const w=ev.target.closest('[data-w]');if(w){openWq(+w.dataset.w);return}
+  const c=ev.target.closest('[data-c]');if(!c)return;const e=D.plans[D.cur].ex[+c.dataset.c],k=key(e),i=D.act.done.indexOf(k);
+  i<0?D.act.done.push(k):D.act.done.splice(i,1);navigator.vibrate&&navigator.vibrate(10);save();showAct()};
+function endAct(){
+  const p=actPlan(),dn=new Set(D.act.done),n=p.ex.filter(e=>dn.has(key(e))).length,en=Date.now();
+  if(!confirm(`Training beenden?\n${mins(en-D.act.st)} · ${n}/${p.ex.length} Übungen`))return;
+  D.sess.push({pn:p.name,st:D.act.st,en,done:n,tot:p.ex.length});D.act=null;save();hideAct();
+  const d=new Date();calY=d.getFullYear();calM=d.getMonth();setView('t')}
+
+// Kalender & Auswertung
+function renderT(){
+  const now=new Date();if(calY==null){calY=now.getFullYear();calM=now.getMonth()}
+  const S=D.sess.slice().sort((a,b)=>a.st-b.st),byD={};S.forEach(x=>(byD[dk(x.st)]=byD[dk(x.st)]||[]).push(x));
+  // Kalender
+  const f=new Date(calY,calM,1),off=(f.getDay()+6)%7,dim=new Date(calY,calM+1,0).getDate(),td=dk(Date.now());
+  let cal=['Mo','Di','Mi','Do','Fr','Sa','So'].map(x=>`<div class="h">${x}</div>`).join('')+'<div></div>'.repeat(off);
+  const used=new Set();
+  for(let d=1;d<=dim;d++){const k=dk(new Date(calY,calM,d)),l=byD[k]||[];l.forEach(x=>used.add(x.pn));
+    cal+=`<div class="${l.length?'has':''}${k===td?' td':''}${k>td?' fu':''}" ${l.length?`data-day="${k}"`:''}>${d}<span class="dots">${l.map(x=>`<i style="background:${col(x.pn)}"></i>`).join('')}</span></div>`}
+  const mc=S.filter(x=>{const d=new Date(x.st);return d.getFullYear()===calY&&d.getMonth()===calM});
+  // Kennzahlen
+  const n=S.length,du=S.map(x=>x.en-x.st),tot=du.reduce((a,b)=>a+b,0),avg=n?tot/n:0;
+  const d28=S.filter(x=>x.st>Date.now()-28*864e5).length;
+  const ws=new Set(S.map(x=>wk(x.st)));let w=wk(Date.now()),stk=0;if(!ws.has(w))w=prevWk(w);while(ws.has(w)){stk++;w=prevWk(w)}
+  const cr=n?S.reduce((a,x)=>a+(x.tot?x.done/x.tot:0),0)/n*100:0;
+  const wdC=[0,0,0,0,0,0,0];S.forEach(x=>wdC[new Date(x.st).getDay()]++);const fav=n?wdC.indexOf(Math.max(...wdC)):-1;
+  const hrC={};S.forEach(x=>{const h=new Date(x.st).getHours(),b=h<12?'Vormittag':h<17?'Nachmittag':'Abend';hrC[b]=(hrC[b]||0)+1});
+  const favT=Object.entries(hrC).sort((a,b)=>b[1]-a[1])[0];
+  const last=S[n-1],lng=n?Math.max(...du):0;
+  // Wochen-Balken (letzte 8 Wochen)
+  const wks=[];let ww=wk(Date.now());for(let i=0;i<8;i++){wks.unshift(ww);ww=prevWk(ww)}
+  const wc=wks.map(x=>S.filter(s=>wk(s.st)===x).length),wm=Math.max(1,...wc);
+  // Planverteilung
+  const pc={};S.forEach(x=>pc[x.pn]=(pc[x.pn]||0)+1);const pe=Object.entries(pc).sort((a,b)=>b[1]-a[1]),pm=pe.length?pe[0][1]:1;
+
+  $('vT').innerHTML=(D.act?`<button class="big" id="tRes">▶ Laufendes Training öffnen</button>`:`<button class="big" id="tGo">▶ Training starten</button>`)+
+  `<div class="calh"><button id="cP">‹</button><b>${MN[calM]} ${calY}</b><button id="cN">›</button></div><div class="cal" id="cal">${cal}</div>
+  <div class="leg">${[...used].map(p=>`<span><i style="background:${col(p)}"></i>${esc(p)}</span>`).join('')||'Keine Trainings in diesem Monat'}${mc.length?`<span style="margin-left:auto">${mc.length}× · ${mins(mc.reduce((a,x)=>a+x.en-x.st,0))}</span>`:''}</div>`+
+  (n?`<h3>Auswertung</h3>
+  <div class="kp"><div><small>Trainings</small><b>${n}</b></div><div><small>Ø Dauer</small><b>${Math.round(avg/6e4)}</b><small>min</small></div><div><small>Gesamt</small><b>${(tot/36e5).toFixed(1).replace('.',',')}</b><small>Std.</small></div>
+  <div><small>Ø pro Woche</small><b>${(d28/4).toFixed(1).replace('.',',')}</b><small>letzte 4 W.</small></div><div><small>Wochen-Serie</small><b>${stk}</b><small>${stk===1?'Woche':'Wochen'} in Folge</small></div><div><small>Letztes</small><b style="font-size:15px">${ago(dk(last.st))}</b></div>
+  <div><small>Ø erledigt</small><b>${Math.round(cr)}</b><small>% der Übungen</small></div><div><small>Lieblingstag</small><b>${WD[fav]}</b><small>${favT?favT[0]:''}</small></div><div><small>Längstes</small><b>${Math.round(lng/6e4)}</b><small>min</small></div></div>
+  <h3>Trainings pro Woche</h3><div class="wb">${wc.map((c,i)=>`<div class="${c?'':'z'}" style="height:${c/wm*100}%"><span>${c||''}${i===7?' (akt.)':''}</span></div>`).join('')}</div>
+  <h3>Pläne</h3><div class="dist">${pe.map(([p,c])=>`<div><span>${esc(p)}</span><em><i style="width:${c/pm*100}%;background:${col(p)}"></i></em><b>${c}</b></div>`).join('')}</div>
+  <h3>Letzte Trainings</h3><ul class="sl">${S.slice(-5).reverse().map(x=>sessLi(x)).join('')}</ul>`
+  :'<div class="empty">Noch keine Trainings aufgezeichnet.</div>');
+  $('tGo')&&($('tGo').onclick=openSel);$('tRes')&&($('tRes').onclick=showAct);
+  $('cP').onclick=()=>{calM--;if(calM<0){calM=11;calY--}renderT()};$('cN').onclick=()=>{calM++;if(calM>11){calM=0;calY++}renderT()};
+  $('cal').onclick=e=>{const c=e.target.closest('[data-day]');c&&openDay(c.dataset.day)};
+}
+function sessLi(x){const i=D.sess.indexOf(x);return `<li><i style="background:${col(x.pn)}"></i><div><b>${esc(x.pn)}</b><small>${dfm(dk(x.st))} · ${hm(x.st)}–${hm(x.en)} · ${mins(x.en-x.st)} · ${x.done}/${x.tot}</small></div><button data-del="${i}">×</button></li>`}
+let dayK='';
+function openDay(k){dayK=k;const l=D.sess.filter(x=>dk(x.st)===k);if(!l.length){$('dDay').open&&$('dDay').close();return}
+  const d=new Date(k+'T12:00');$('dayT').textContent=WD[d.getDay()]+', '+dfm(k);$('dayL').innerHTML=l.map(sessLi).join('');$('dDay').open||$('dDay').showModal()}
+const delSess=e=>{const b=e.target.closest('[data-del]');if(!b||!confirm('Training löschen?'))return;D.sess.splice(+b.dataset.del,1);save();renderT();$('dDay').open&&openDay(dayK)};
+$('dayL').onclick=delSess;$('vT').addEventListener('click',e=>{if(e.target.closest('.sl'))delSess(e)});
+$('dayX').onclick=()=>$('dDay').close();
+save();render();if(D.act)showAct();
 </script>
 </body>
 </html>
