@@ -93,6 +93,9 @@ body{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .more{border:0;background:none;color:var(--mu);font-size:22px;width:34px;height:40px;flex:0 0 34px;padding:0}
 .tg{display:block;font-size:12px;color:#ff9f0a;margin-top:2px}.tg.sk{color:var(--mu)}
 .card.skp{opacity:.45}.card.skp .n{text-decoration:line-through}
+#gear{position:absolute;right:16px;top:14px;border:0;background:var(--card);width:40px;height:40px;border-radius:20px;font-size:18px}
+#gear::after{content:'';position:absolute;right:2px;top:2px;width:10px;height:10px;border-radius:5px;background:var(--mu);border:2px solid var(--bg)}
+#gear[data-s=ok]::after{background:var(--ok)}#gear[data-s=err]::after{background:var(--dn)}#gear[data-s=b]::after{background:#ff9f0a}
 .wul{text-align:center;font-size:20px;font-weight:700;color:#ff9f0a;margin-top:30px}
 .addx{width:100%;border:2px dashed var(--bd);background:none;color:var(--ac);border-radius:14px;padding:14px;font-size:16px;font-weight:600}
 .calh{display:flex;align-items:center;justify-content:space-between;margin:2px 0 6px}.calh b{font-size:18px}
@@ -122,7 +125,7 @@ h3{font-size:20px;margin:18px 2px 10px}
 </style>
 </head>
 <body>
-<header><h1 id="h1">Pläne</h1><div class="tabs" id="tabs"></div></header>
+<header><h1 id="h1">Pläne</h1><button id="gear" aria-label="Dropbox-Sync" data-s="off">☁️</button><div class="tabs" id="tabs"></div></header>
 <main id="main"></main>
 <main id="vT" hidden></main>
 <div id="act" hidden></div>
@@ -154,6 +157,17 @@ h3{font-size:20px;margin:18px 2px 10px}
 
 <dialog id="dSel"><div class="sh"><h2>Welcher Plan?</h2><div class="sel" id="selL"></div>
 <div class="btns"><button class="sec" id="selX">Abbrechen</button></div></div></dialog>
+
+<dialog id="dSy"><div class="sh"><h2>Dropbox-Sync</h2>
+<div class="cs" style="text-align:left;margin-bottom:10px" id="syS"></div>
+<div id="syOff"><label>Dropbox App-Key</label><input id="syK" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="z. B. abc123xyz">
+<div class="cs" style="text-align:left;margin-top:8px">Redirect-URI (in der Dropbox-App eintragen):<br><b id="syU" style="user-select:all;-webkit-user-select:all;word-break:break-all"></b></div>
+<button class="big" style="background:var(--ac);margin-top:14px" id="syC">Mit Dropbox verbinden</button></div>
+<div id="syOn"><button class="big" style="background:var(--ac)" id="syN">Jetzt synchronisieren</button>
+<button class="sec" id="syD" style="width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;color:var(--dn)">Verbindung trennen</button></div>
+<h3>Backup</h3><div class="btns" style="margin-top:0"><button class="sec" id="exB">⬇︎ Export</button><button class="sec" id="imB">⬆︎ Import</button></div>
+<input type="file" id="imF" accept="application/json,.json" hidden>
+<div class="btns"><button class="sec" id="syX">Schließen</button></div></div></dialog>
 
 <dialog id="dWu"><div class="sh"><h2>Warm-up?</h2><div class="cs" style="text-align:left;margin-bottom:14px" id="wuT"></div>
 <div class="sel"><button id="wuY">🔥 Ja, mit Warm-up starten<small>Eigener Timer, danach startet das Training</small></button>
@@ -189,7 +203,7 @@ const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth
 // Migration: Historie anlegen
 D.plans.forEach(p=>p.ex.forEach(e=>{if(!e.h)e.h=e.w!==''&&e.w!=null?[{d:today(),w:+e.w}]:[];delete e.st}));
 let editEx=-1,editPl=-1,detEx=-1;
-const save=()=>localStorage.setItem(K,JSON.stringify(D));
+const save=(b=true)=>{if(b)D.mod=Date.now();localStorage.setItem(K,JSON.stringify(D));if(b)schedPush()};
 const key=e=>e.n.trim().toLowerCase();
 const same=e=>{const k=key(e),r=[];D.plans.forEach(p=>p.ex.forEach(o=>{if(o!==e&&key(o)===k)r.push(o)}));return r};
 // Gewicht, Wdh. und Historie global auf alle Pläne übertragen (Sätze bleiben planspezifisch)
@@ -469,10 +483,67 @@ function sessLi(x){const i=D.sess.indexOf(x);return `<li><i style="background:${
 let dayK='';
 function openDay(k){dayK=k;const l=D.sess.filter(x=>dk(x.st)===k);if(!l.length){$('dDay').open&&$('dDay').close();return}
   const d=new Date(k+'T12:00');$('dayT').textContent=WD[d.getDay()]+', '+dfm(k);$('dayL').innerHTML=l.map(sessLi).join('');$('dDay').open||$('dDay').showModal()}
-const delSess=e=>{const b=e.target.closest('[data-del]');if(!b||!confirm('Training löschen?'))return;D.sess.splice(+b.dataset.del,1);save();renderT();$('dDay').open&&openDay(dayK)};
+const delSess=e=>{const b=e.target.closest('[data-del]');if(!b||!confirm('Training löschen?'))return;D.del=D.del||[];D.del.push(sid(D.sess[+b.dataset.del]));D.sess.splice(+b.dataset.del,1);save();renderT();$('dDay').open&&openDay(dayK)};
 $('dayL').onclick=delSess;$('vT').addEventListener('click',e=>{if(e.target.closest('.sl'))delSess(e)});
 $('dayX').onclick=()=>$('dDay').close();
-save();render();if(D.act)showAct();
+
+// ===== Dropbox-Sync (OAuth PKCE, Datei im App-Ordner) =====
+const SK='trainingsplaene_sync',FP='/trainingsplan.json',RURI=location.origin+location.pathname;
+let S={};try{S=JSON.parse(localStorage.getItem(SK))||{}}catch(e){}
+const sSave=()=>localStorage.setItem(SK,JSON.stringify(S));
+let pushT=null,busy=false,again=false;
+function schedPush(){clearTimeout(pushT);pushT=setTimeout(dbxSync,1500)}
+function stat(t,c){$('syS').textContent=t;$('gear').dataset.s=c||''}
+const b64u=a=>btoa(String.fromCharCode(...new Uint8Array(a))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+async function dbxConnect(){const k=$('syK').value.trim();if(!k){alert('Bitte App-Key eintragen.');return}
+  if(!crypto.subtle){alert('Verbindung nur über https (GitHub Pages) möglich.');return}
+  S.key=k;const v=b64u(crypto.getRandomValues(new Uint8Array(48)));S.ver=v;sSave();
+  const ch=b64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
+  location.href='https://www.dropbox.com/oauth2/authorize?'+new URLSearchParams({client_id:k,response_type:'code',code_challenge:ch,code_challenge_method:'S256',redirect_uri:RURI,token_access_type:'offline'})}
+async function tokReq(p){const r=await fetch('https://api.dropboxapi.com/oauth2/token',{method:'POST',body:new URLSearchParams({...p,client_id:S.key})});
+  if(r.status===400&&p.grant_type==='refresh_token'){S.rt=null;S.at=null;sSave();throw new Error('nc')}
+  if(!r.ok)throw new Error('Anmeldung '+r.status);const j=await r.json();
+  S.at=j.access_token;S.exp=Date.now()+((j.expires_in||14400)-60)*1000;if(j.refresh_token)S.rt=j.refresh_token;sSave()}
+async function tok(){if(!S.rt)throw new Error('nc');if(!S.at||Date.now()>S.exp)await tokReq({grant_type:'refresh_token',refresh_token:S.rt});return S.at}
+async function dl(){const r=await fetch('https://content.dropboxapi.com/2/files/download',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Dropbox-API-Arg':JSON.stringify({path:FP})}});
+  if(r.status===409)return null;if(r.status===401){S.at=null;throw new Error('Token abgelaufen')}if(!r.ok)throw new Error('Download '+r.status);return r.json()}
+async function ul(d){const r=await fetch('https://content.dropboxapi.com/2/files/upload',{method:'POST',headers:{Authorization:'Bearer '+await tok(),'Dropbox-API-Arg':JSON.stringify({path:FP,mode:'overwrite',mute:true}),'Content-Type':'application/octet-stream'},body:JSON.stringify(d)});
+  if(r.status===401)S.at=null;if(!r.ok)throw new Error('Upload '+r.status)}
+const sid=x=>x.pn+'|'+x.st;
+// Zusammenführen: Trainings beider Seiten vereinigen (Löschungen über Tombstones), Pläne/laufendes Training vom zuletzt geänderten Stand
+function merge(L,R){
+  const del=[...new Set([...(L.del||[]),...(R.del||[])])],ds=new Set(del),m={};
+  [...(R.sess||[]),...(L.sess||[])].forEach(x=>{if(!ds.has(sid(x)))m[sid(x)]=x});
+  const n=(L.mod||0)>=(R.mod||0)?L:R;
+  return {...n,sess:Object.values(m).sort((a,b)=>a.st-b.st),del,mod:Math.max(L.mod||0,R.mod||0)}}
+function refresh(){if(D.act)showAct();else if(!$('act').hidden)hideAct();else view==='t'?renderT():render()}
+async function dbxSync(){if(!S.rt){stat('Nicht verbunden – Daten nur auf diesem Gerät','off');return}
+  if(busy){again=true;return}busy=true;stat('Synchronisiere …','b');
+  try{const R=await dl(),M=R?merge(D,R):D,js=JSON.stringify(M);
+    if(js!==JSON.stringify(D)){D=M;localStorage.setItem(K,js);refresh()}
+    if(!R||js!==JSON.stringify(R))await ul(M);
+    S.last=Date.now();sSave();stat('Synchronisiert '+hm(S.last)+' Uhr','ok')}
+  catch(e){stat(e.message==='nc'?'Verbindung abgelaufen – bitte neu verbinden':!navigator.onLine?'Offline – wird automatisch nachgeholt':'Fehler: '+e.message,'err')}
+  busy=false;if(again){again=false;dbxSync()}}
+function openSy(){$('syK').value=S.key||'';$('syU').textContent=RURI;$('syOff').hidden=!!S.rt;$('syOn').hidden=!S.rt;$('dSy').showModal()}
+$('gear').onclick=openSy;$('syX').onclick=()=>$('dSy').close();$('syC').onclick=dbxConnect;
+$('syN').onclick=dbxSync;
+$('syD').onclick=()=>{if(!confirm('Dropbox-Verbindung trennen? Lokale Daten bleiben erhalten.'))return;S={key:S.key};sSave();stat('Nicht verbunden – Daten nur auf diesem Gerät','off');openSy()};
+$('exB').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='trainingsplan-'+today()+'.json';document.body.appendChild(a);a.click();a.remove()};
+$('imB').onclick=()=>$('imF').click();
+$('imF').onchange=async()=>{const f=$('imF').files[0];$('imF').value='';if(!f)return;
+  try{const j=JSON.parse(await f.text());if(!Array.isArray(j.plans)||!j.plans.length)throw 0;
+    if(!confirm('Backup importieren? Alle aktuellen Daten werden ersetzt.'))return;j.del=[...new Set([...(j.del||[]),...(D.sess||[]).map(sid).filter(k=>!(j.sess||[]).some(x=>sid(x)===k))])];
+    D=j;D.sess=D.sess||[];save();$('dSy').close();refresh()}catch(e){alert('Ungültige Backup-Datei.')}};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')dbxSync()});
+addEventListener('online',dbxSync);
+(async()=>{const q=new URLSearchParams(location.search);
+  if(q.get('code')&&S.ver){history.replaceState(null,'',RURI);
+    try{await tokReq({grant_type:'authorization_code',code:q.get('code'),code_verifier:S.ver,redirect_uri:RURI});delete S.ver;sSave()}
+    catch(e){alert('Dropbox-Verbindung fehlgeschlagen: '+e.message)}}
+  else if(q.get('error')){history.replaceState(null,'',RURI);alert('Dropbox-Verbindung abgebrochen.')}
+  dbxSync()})();
+save(false);render();if(D.act)showAct();
 </script>
 </body>
 </html>
