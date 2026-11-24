@@ -194,6 +194,7 @@ h3{font-size:20px;margin:18px 2px 10px}
 <button class="sec" id="syD" style="width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;color:var(--dn)">Verbindung trennen</button></div>
 <h3>Backup</h3><div class="btns" style="margin-top:0"><button class="sec" id="exB">⬇︎ Export</button><button class="sec" id="imB">⬆︎ Import</button></div>
 <input type="file" id="imF" accept="application/json,.json" hidden>
+<div class="cs" style="margin-top:16px" id="verI"></div>
 <div class="btns"><button class="sec" id="syX">Schließen</button></div></div></dialog>
 
 <dialog id="dWu"><div class="sh"><h2>Warm-up?</h2><div class="cs" style="text-align:left;margin-bottom:14px" id="wuT"></div>
@@ -235,6 +236,8 @@ h3{font-size:20px;margin:18px 2px 10px}
 </div></dialog>
 
 <script>
+// Bei jeder Änderung hochzählen
+const VER='1.6 · 24.11.2026';
 const K='trainingsplaene_v1',$=id=>document.getElementById(id);
 let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
 // Datenstruktur absichern (beim Start, nach Sync und nach Import)
@@ -692,7 +695,11 @@ async function dbxSync(){if(!S.rt){stat('Nicht verbunden – Daten nur auf diese
     S.last=Date.now();sSave();stat('Synchronisiert '+hm(S.last)+' Uhr','ok')}
   catch(e){stat(e.message==='nc'?'Verbindung abgelaufen – bitte neu verbinden':!navigator.onLine?'Offline – wird automatisch nachgeholt':'Fehler: '+e.message,'err')}
   busy=false;if(again){again=false;dbxSync()}}
-function openSy(){$('syK').value=S.key||'';$('syU').textContent=RURI;$('syOff').hidden=!!S.rt;$('syOn').hidden=!S.rt;$('dSy').showModal()}
+// Version anzeigen und mit der veröffentlichten Version vergleichen
+async function verCheck(){const el=$('verI');el.innerHTML='Version <b>'+esc(VER)+'</b>';
+  try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const VER='([^']+)'/);
+    if(m)el.innerHTML+=m[1]===VER?' · ✓ aktuell':' · <span style="color:#ff9f0a">neue Version '+esc(m[1])+' verfügbar – App schließen und neu öffnen</span>'}catch(e){}}
+function openSy(){verCheck();$('syK').value=S.key||'';$('syU').textContent=RURI;$('syOff').hidden=!!S.rt;$('syOn').hidden=!S.rt;$('dSy').showModal()}
 $('gear').onclick=openSy;$('syX').onclick=()=>$('dSy').close();$('syC').onclick=dbxConnect;
 $('syN').onclick=dbxSync;
 $('syD').onclick=()=>{if(!confirm('Dropbox-Verbindung trennen? Lokale Daten bleiben erhalten.'))return;S={key:S.key};sSave();stat('Nicht verbunden – Daten nur auf diesem Gerät','off');openSy()};
