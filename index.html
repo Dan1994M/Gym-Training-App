@@ -216,6 +216,11 @@ h3{font-size:20px;margin:18px 2px 10px}
 <dialog id="dPk"><div class="sh"><h2 id="pkT"></h2><div class="pk" id="pkL"></div>
 <div class="btns"><button class="sec" id="pkD" style="color:var(--dn)">Satz löschen</button><button class="sec" id="pkX">Abbrechen</button></div></div></dialog>
 
+<dialog id="dBk"><div class="sh"><h2>Alle auf 8 Wdh. umstellen</h2><div class="cs" style="text-align:left;font-size:15px;margin-bottom:12px" id="bkT"></div>
+<div class="sel"><button id="bkW">⚖️ Ziel 8 + Gewicht schätzen<small>Neues Gewicht für 8 Wdh. bis zum Versagen (ca. +10 % bei 12 → 8)</small></button>
+<button id="bkR">8️⃣ Nur Ziel auf 8 setzen<small>Gewichte bleiben unverändert</small></button></div>
+<div class="btns"><button class="sec" id="bkX">Abbrechen</button></div></div></dialog>
+
 <dialog id="dDay"><div class="sh"><h2 id="dayT"></h2><ul class="sl" id="dayL"></ul>
 <div class="btns"><button class="sec" id="dayX">Schließen</button></div></div></dialog>
 
@@ -600,6 +605,7 @@ function renderG(){
   const up4=wd.filter(x=>x.m4>0).length,stg=wd.filter(x=>x.stag).length,pr=gL.map(x=>prog(x.e)),nsg=pr.filter(x=>x.sg).length;
   $('vG').innerHTML=`<div class="tabs">${['',...D.plans.map(p=>p.name)].map(n=>`<button class="tab${n===gF?' on':''}" data-gf="${esc(n)}">${n===''?'Alle':esc(n)}</button>`).join('')}</div>`+
   `<div class="bwr"><span>Körpergewicht <b>${D.bw?fmt(D.bw)+' kg':'–'}</b></span><button id="bwE">${D.bw?'Ändern':'Eintragen'}</button></div>`+
+  (bkList().length?`<button class="addx" id="bkO" style="margin-bottom:12px">⇄ Alle Ziele auf 8 Wdh. umstellen (${bkList().length})</button>`:'')+
   (gL.length?`<div class="kp"><div><small>Vorschläge</small><b style="color:var(--ac)">${nsg}</b><small>offen</small></div><div><small>Gesteigert</small><b class="up">${up4}</b><small>letzte 4 W.</small></div><div><small>Stagniert</small><b style="color:#ff9f0a">${stg}</b><small>≥ 3 Wochen</small></div></div>`+
   gL.map((x,j)=>{const e=x.e,g=inf[j];
     if(!g)return `<div class="pgc" data-g="${j}"><div class="grow"><div class="n">${esc(e.n)}</div><div class="pgm">Noch keine Daten</div></div></div>`;
@@ -612,8 +618,16 @@ function renderG(){
     ${pr[j].on?`<div class="pgm">Ziel ${pr[j].t} · Aufstieg bei allen ≥ ${pr[j].nx}<span class="stg"><i class="${pr[j].c>0?'on':''}"></i><i class="${pr[j].c>1?'on':''}"></i></span></div>`:''}
     ${pr[j].sg?`<div class="hint${pr[j].sg.i?' i':''}" data-sgg="${j}">💡 ${esc(pr[j].sg.s)}</div>`:''}</div>${spark(e)}</div>`}).join('')
   :'<div class="empty">Noch keine Übungen.</div>');
-  $('bwE').onclick=openBw;
+  $('bwE').onclick=openBw;$('bkO')&&($('bkO').onclick=openBk);
 }
+// Sammelaktion: alle Übungen mit Ziel > 8 auf 8 Wdh. umstellen (je Übungsname einmal, sync überträgt auf alle Pläne)
+const bkList=()=>{const m={};D.plans.forEach(p=>p.ex.forEach(e=>{if((+e.r||0)>8&&!m[key(e)])m[key(e)]=e}));return Object.values(m)};
+function openBk(){const l=bkList(),ni=l.filter(e=>e.inv&&!D.bw).length;
+  $('bkT').innerHTML=`Betrifft <b>${l.length}</b> Übungen: ${l.map(e=>esc(e.n)+' ('+fmt(e.r)+')').join(', ')}.`+(ni?`<br><br>⚠️ ${ni} Gegengewicht-Übung(en): ohne Körpergewicht bleibt dort das Gewicht unverändert.`:'');$('dBk').showModal()}
+function doBk(withW){const l=bkList();let n=0;
+  l.forEach(e=>{const r=+e.r;e.r='8';if(withW&&e.w!==''&&!isNaN(+e.w)){const nw=est(e,+e.w,r,8);if(nw!=null&&nw!==+e.w){setW(e,nw);n++}}e.sk=null;sync(e)});
+  save();$('dBk').close();refresh();alert(l.length+' Übungen auf 8 Wdh. umgestellt'+(withW?', '+n+' Gewichte angepasst.':'.'))}
+$('bkW').onclick=()=>doBk(true);$('bkR').onclick=()=>doBk(false);$('bkX').onclick=()=>$('dBk').close();
 function openBw(){wqM={bw:1};$('wqT').textContent='Körpergewicht';$('wqL').textContent='Körpergewicht (kg) – für Gegengewicht-Übungen';$('iWq').inputMode='decimal';
   $('iWq').value=D.bw?String(D.bw).replace('.',','):'';$('dW').showModal();setTimeout(()=>{$('iWq').focus();$('iWq').select()},50)}
 $('sgC').onclick=()=>$('dSg').close();
