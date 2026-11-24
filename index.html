@@ -245,13 +245,13 @@ const sg=e=>e.inv?-1:1;
 // Vergleich zweier Historieneinträge: 1 besser, -1 schlechter, 0 gleich (Gewicht zuerst, dann Summe Wdh.)
 const sum=a=>a.reduce((x,y)=>x+y,0);
 // ===== Progression 8 → 10 → 12 → mehr Gewicht =====
-// Aufstieg: 2 Trainings in Folge, alle Sätze ≥ nächste Stufe (Ziel+2), bei gleichem Gewicht und Ziel.
+// Aufstieg: 2 Trainings in Folge, alle Sätze ≥ aktuelles Ziel, bei gleichem Gewicht und Ziel.
 const ST=[8,10,12];
 const loadOf=(e,w)=>e.inv?(D.bw?D.bw-w:null):w;
 // Gewicht für Ziel-Wdh. aus geschafften Wdh. schätzen (Epley), bei Gegengewicht über Körpergewicht
 function est(e,w,reps,to){const L=loadOf(e,w);if(L==null||L<=0)return null;const L2=L*(1+reps/30)/(1+to/30);return Math.round(e.inv?D.bw-L2:L2)}
 function prog(e){
-  const t=+e.r||0,nx=t+2,w=+e.w,lg=(e.h||[]).filter(x=>x.s&&x.s.length),last=lg[lg.length-1];let c=0,sg=null;
+  const t=+e.r||0,nx=t,w=+e.w,lg=(e.h||[]).filter(x=>x.s&&x.s.length),last=lg[lg.length-1];let c=0,sg=null;
   for(let k=lg.length-1;k>=0&&c<2;k--){const x=lg[k];if(x.w!==w||x.t!==t||!x.s.every(v=>v>=nx))break;c++}
   const cur=last&&last.w===w&&last.t===t,dir=e.inv?-1:1;
   const fix=(nw,want)=>{if(nw==null)return null;if((nw-w)*dir*want<1)nw=w+dir*want;return Math.max(0,nw)};
@@ -261,7 +261,7 @@ function prog(e){
     if(t<12)sg={ty:'up',r:t+2,s:'Bereit für '+(t+2)+' Wdh.',x:'2 Trainings in Folge alle Sätze ≥ '+nx+' Wdh. ('+lg.slice(-2).map(x=>x.s.join('·')).join(' und ')+'). Nächste Stufe: '+(t+2)+' Wdh.'};
     else{const nw=fix(est(e,w,Math.min(...last.s),8),1);
       sg=nw==null?{ty:'bw',s:'Körpergewicht fehlt',x:'Stufe 12 gemeistert. Für das neue Gegengewicht brauche ich dein Körpergewicht (Fortschritt-Tab).'}
-      :{ty:'w',r:8,w:nw,s:'Stufe 12 gemeistert → '+fmt(nw)+' kg × 8',x:'2 Trainings in Folge alle Sätze ≥ 14 Wdh. Geschätztes Gewicht für 8 Wdh. bis zum Versagen: '+fmt(nw)+' kg (vorher '+fmt(w)+' kg). Das erste Training damit zeigt, ob es passt.'}}}
+      :{ty:'w',r:8,w:nw,s:'Stufe 12 gemeistert → '+fmt(nw)+' kg × 8',x:'2 Trainings in Folge alle Sätze ≥ 12 Wdh. Geschätztes Gewicht für 8 Wdh. bis zum Versagen: '+fmt(nw)+' kg (vorher '+fmt(w)+' kg). Das erste Training damit zeigt, ob es passt.'}}}
   else if(cur&&last.s[0]<=t-2){const nw=fix(est(e,w,last.s[0],t),-1);
     sg=nw==null?{ty:'bw',s:'Körpergewicht fehlt',x:'Zu schwer – für die Berechnung brauche ich dein Körpergewicht.'}
     :{ty:'down',r:t,w:nw,s:'Zu schwer → '+fmt(nw)+' kg',x:'Im 1. Satz nur '+last.s[0]+' statt '+t+' Wdh. geschafft. Geschätztes Gewicht für '+t+' Wdh.: '+fmt(nw)+' kg.'}}
