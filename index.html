@@ -137,6 +137,14 @@ h3{font-size:20px;margin:18px 2px 10px}
 .bdg{display:inline-block;border-radius:8px;padding:1px 7px;font-size:12px;font-weight:600;background:var(--bg);color:var(--mu);margin-right:4px}
 .bdg.up{background:rgba(52,199,89,.15);color:var(--ok)}.bdg.dn{background:rgba(255,59,48,.13);color:var(--dn)}.bdg.st{background:rgba(255,159,10,.15);color:#ff9f0a}
 #vG .tabs{margin-bottom:10px}
+.hint{margin-top:8px;font-size:13px;font-weight:600;color:var(--ac);background:rgba(10,132,255,.12);border-radius:8px;padding:6px 10px}
+.hint.i{color:#ff9f0a;background:rgba(255,159,10,.14)}
+.pk{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.pk button{border:0;border-radius:12px;height:52px;font-size:19px;font-weight:700;background:var(--bg);color:var(--tx);font-variant-numeric:tabular-nums}
+.pk button.t{box-shadow:inset 0 0 0 2px var(--ok)}.pk button.c{background:var(--ac);color:#fff}
+.bwr{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:15px}
+.bwr button{border:0;background:none;color:var(--ac);font-size:15px;font-weight:600}
+.stg{display:inline-flex;gap:3px;vertical-align:middle;margin-left:4px}.stg i{width:8px;height:8px;border-radius:4px;background:var(--bd)}.stg i.on{background:var(--ok)}
 </style>
 </head>
 <body>
@@ -201,6 +209,13 @@ h3{font-size:20px;margin:18px 2px 10px}
 <div class="cs" style="margin-top:12px;text-align:left">Gilt nur für dieses Training – dein Plan bleibt unverändert.</div>
 <div class="btns"><button type="button" class="sec" id="rpX">Abbrechen</button><button class="pri">Übernehmen</button></div></form></dialog>
 
+<dialog id="dSg"><div class="sh"><h2 id="sgT"></h2><div class="cs" style="text-align:left;font-size:15px" id="sgX"></div>
+<div class="btns"><button class="sec" id="sgI">Ignorieren</button><button class="pri" id="sgA">Übernehmen</button></div>
+<div class="btns" style="margin-top:8px"><button class="sec" id="sgC">Schließen</button></div></div></dialog>
+
+<dialog id="dPk"><div class="sh"><h2 id="pkT"></h2><div class="pk" id="pkL"></div>
+<div class="btns"><button class="sec" id="pkD" style="color:var(--dn)">Satz löschen</button><button class="sec" id="pkX">Abbrechen</button></div></div></dialog>
+
 <dialog id="dDay"><div class="sh"><h2 id="dayT"></h2><ul class="sl" id="dayL"></ul>
 <div class="btns"><button class="sec" id="dayX">Schließen</button></div></div></dialog>
 
@@ -224,11 +239,43 @@ const save=(b=true)=>{if(b)D.mod=Date.now();localStorage.setItem(K,JSON.stringif
 const key=e=>e.n.trim().toLowerCase();
 const same=e=>{const k=key(e),r=[];D.plans.forEach(p=>p.ex.forEach(o=>{if(o!==e&&key(o)===k)r.push(o)}));return r};
 // Gewicht, Wdh. und Historie global auf alle Pläne übertragen (Sätze bleiben planspezifisch)
-function sync(e){same(e).forEach(o=>{o.w=e.w;o.r=e.r;o.inv=!!e.inv;o.h=e.h.map(x=>({...x,...(x.s?{s:[...x.s]}:{})}))})}
+function sync(e){same(e).forEach(o=>{o.w=e.w;o.r=e.r;o.inv=!!e.inv;o.sk=e.sk;o.h=e.h.map(x=>({...x,...(x.s?{s:[...x.s]}:{})}))})}
 // Gegengewicht: weniger kg = Fortschritt. Vorzeichen der Verbesserung
 const sg=e=>e.inv?-1:1;
 // Vergleich zweier Historieneinträge: 1 besser, -1 schlechter, 0 gleich (Gewicht zuerst, dann Summe Wdh.)
 const sum=a=>a.reduce((x,y)=>x+y,0);
+// ===== Progression 8 → 10 → 12 → mehr Gewicht =====
+// Aufstieg: 2 Trainings in Folge, alle Sätze ≥ nächste Stufe (Ziel+2), bei gleichem Gewicht und Ziel.
+const ST=[8,10,12];
+const loadOf=(e,w)=>e.inv?(D.bw?D.bw-w:null):w;
+// Gewicht für Ziel-Wdh. aus geschafften Wdh. schätzen (Epley), bei Gegengewicht über Körpergewicht
+function est(e,w,reps,to){const L=loadOf(e,w);if(L==null||L<=0)return null;const L2=L*(1+reps/30)/(1+to/30);return Math.round(e.inv?D.bw-L2:L2)}
+function prog(e){
+  const t=+e.r||0,nx=t+2,w=+e.w,lg=(e.h||[]).filter(x=>x.s&&x.s.length),last=lg[lg.length-1];let c=0,sg=null;
+  for(let k=lg.length-1;k>=0&&c<2;k--){const x=lg[k];if(x.w!==w||x.t!==t||!x.s.every(v=>v>=nx))break;c++}
+  const cur=last&&last.w===w&&last.t===t,dir=e.inv?-1:1;
+  const fix=(nw,want)=>{if(nw==null)return null;if((nw-w)*dir*want<1)nw=w+dir*want;return Math.max(0,nw)};
+  if(e.w===''||isNaN(w))sg=null;
+  else if(!ST.includes(t)){const r=ST.reduce((a,b)=>Math.abs(b-t)<Math.abs(a-t)?b:a);sg={ty:'cal',r,s:'Ziel auf '+r+' Wdh. setzen',x:'Dein Ziel liegt bei '+(t||'–')+' Wdh. Das Schema arbeitet mit den Stufen 8 → 10 → 12.'}}
+  else if(cur&&c>=2){
+    if(t<12)sg={ty:'up',r:t+2,s:'Bereit für '+(t+2)+' Wdh.',x:'2 Trainings in Folge alle Sätze ≥ '+nx+' Wdh. ('+lg.slice(-2).map(x=>x.s.join('·')).join(' und ')+'). Nächste Stufe: '+(t+2)+' Wdh.'};
+    else{const nw=fix(est(e,w,Math.min(...last.s),8),1);
+      sg=nw==null?{ty:'bw',s:'Körpergewicht fehlt',x:'Stufe 12 gemeistert. Für das neue Gegengewicht brauche ich dein Körpergewicht (Fortschritt-Tab).'}
+      :{ty:'w',r:8,w:nw,s:'Stufe 12 gemeistert → '+fmt(nw)+' kg × 8',x:'2 Trainings in Folge alle Sätze ≥ 14 Wdh. Geschätztes Gewicht für 8 Wdh. bis zum Versagen: '+fmt(nw)+' kg (vorher '+fmt(w)+' kg). Das erste Training damit zeigt, ob es passt.'}}}
+  else if(cur&&last.s[0]<=t-2){const nw=fix(est(e,w,last.s[0],t),-1);
+    sg=nw==null?{ty:'bw',s:'Körpergewicht fehlt',x:'Zu schwer – für die Berechnung brauche ich dein Körpergewicht.'}
+    :{ty:'down',r:t,w:nw,s:'Zu schwer → '+fmt(nw)+' kg',x:'Im 1. Satz nur '+last.s[0]+' statt '+t+' Wdh. geschafft. Geschätztes Gewicht für '+t+' Wdh.: '+fmt(nw)+' kg.'}}
+  else if(cur&&last.s.every(v=>v>=t+4)){const nw=fix(est(e,w,Math.min(...last.s),t),1);
+    sg=nw==null?{ty:'bw',s:'Körpergewicht fehlt',x:'Zu leicht – für die Berechnung brauche ich dein Körpergewicht.'}
+    :{ty:'light',r:t,w:nw,s:'Zu leicht → '+fmt(nw)+' kg',x:'Alle Sätze ≥ '+(t+4)+' Wdh. ('+last.s.join('·')+'). Kalibrierung: geschätztes Gewicht für '+t+' Wdh. bis zum Versagen: '+fmt(nw)+' kg.'}}
+  else{const l3=lg.slice(-3);if(l3.length===3&&l3.every(x=>x.w===w&&x.t===t)&&sum(l3[1].s)<sum(l3[0].s)&&sum(l3[2].s)<sum(l3[1].s))
+    sg={ty:'reg',i:1,s:'Wdh. 3× in Folge gesunken',x:'Summe der Wdh.: '+l3.map(x=>sum(x.s)).join(' → ')+'. Mögliche Ursachen: zu wenig Erholung, Schlaf, Ernährung. Eine leichtere Woche (Deload) kann helfen.'}}
+  const sig=sg?sg.ty+'|'+(last?last.d+sum(last.s):'')+'|'+t+'|'+w:'';
+  if(sg&&e.sk===sig)sg=null;
+  return {t,nx,c,sg,sig,on:ST.includes(t)}}
+let sgE=null,sgP=null;
+function openSg(e){const p=prog(e);if(!p.sg)return;sgE=e;sgP=p;$('sgT').textContent=e.n;$('sgX').innerHTML='<b>'+esc(p.sg.s)+'</b><br><br>'+esc(p.sg.x);
+  $('sgA').textContent=p.sg.ty==='bw'?'Eintragen':'Übernehmen';$('sgA').hidden=!!p.sg.i;$('dSg').showModal()}
 function cmp(e,a,b){const d=(b.w-a.w)*sg(e);if(d)return d>0?1:-1;if(a.s&&b.s){const r=sum(b.s)-sum(a.s);return r>0?1:r<0?-1:0}return 0}
 // Einmalige Zusammenführung bestehender Duplikate: Historien vereinigen, zuletzt geänderter Stand gewinnt
 (()=>{const g={};D.plans.forEach(p=>p.ex.forEach(e=>(g[key(e)]=g[key(e)]||[]).push(e)));
@@ -258,14 +305,15 @@ function render(){
   (p.ex.length?p.ex.map((e,i)=>{const l=e.h[e.h.length-1];return `<div class="card"><div class="grow">
   <div class="n" data-d="${i}">${esc(e.n)}${e.inv?'<small>⇅ Gegengew.</small>':''}${l?`<small>${ago(l.d)}</small>`:''}</div>
   <div class="qs"><div class="qw"><button data-q="-1" data-e="${i}">−</button><span id="w${i}" data-w="${i}"><b>${fmt(e.w)}</b> kg</span><button data-q="1" data-e="${i}">+</button></div>
-  <span class="p" data-d="${i}"><b>${fmt(e.s)}</b> × <b>${fmt(e.r)}</b></span></div></div>
+  <span class="p" data-d="${i}"><b>${fmt(e.s)}</b> × <b>${fmt(e.r)}</b></span></div>${(g=>g?`<div class="hint${g.i?' i':''}" data-sg="${i}">💡 ${esc(g.s)}</div>`:'')(prog(e).sg)}</div>
   <div class="ord"><button data-m="-1" data-e="${i}">▲</button><button data-m="1" data-e="${i}">▼</button></div></div>`}).join('')
   :'<div class="empty">Noch keine Übungen.<br>Tippe auf ＋ um eine hinzuzufügen.</div>');
   $('plEd').onclick=()=>openPl(D.cur);
 }
 $('tabs').onclick=e=>{const i=e.target.dataset.i;if(i==null)return;if(i==='new')return openPl(-1);D.cur=+i;save();render()};
 $('main').onclick=ev=>{
-  const t=ev.target.closest('button,[data-d],[data-w]');if(!t)return;const ex=D.plans[D.cur].ex;
+  const t=ev.target.closest('button,[data-d],[data-w],[data-sg]');if(!t)return;const ex=D.plans[D.cur].ex;
+  if(t.dataset.sg!=null){openSg(ex[+t.dataset.sg]);return}
   if(t.dataset.q){const i=+t.dataset.e,e=ex[i];setW(e,(+e.w||0)+ +t.dataset.q);sync(e);save();render();
     const s=$('w'+i);s.classList.add('flash');navigator.vibrate&&navigator.vibrate(10);return}
   if(t.dataset.w!=null){openWq(+t.dataset.w);return}
@@ -302,7 +350,7 @@ $('dtL').onclick=ev=>{const k=ev.target.dataset.h;if(k==null)return;const e=detE
   if(!confirm('Eintrag löschen?'))return;e.h.splice(+k,1);if(+k===e.h.length&&e.h.length)e.w=e.h[e.h.length-1].w;sync(e);save();view==='g'?renderG():render();openDetE(e,detPI,detEx)};
 let wEx=-1,wqM=null;
 $('fW').onsubmit=ev=>{const v=$('iWq').value.trim().replace(',','.');
-  if(wqM){if(v!==''&&isNaN(+v)){ev.preventDefault();return}setVal(wqM.i,wqM.k,v===''?null:Math.max(0,Math.round(+v)));wqM=null;return}
+  if(wqM&&wqM.bw){if(v===''||isNaN(+v)||+v<=0){ev.preventDefault();return}D.bw=Math.round(+v*10)/10;wqM=null;save();refresh();return}
   if(v===''||isNaN(+v)){ev.preventDefault();$('iWq').focus();return}
   {const e=D.plans[D.cur].ex[wEx];setW(e,+v);sync(e)}save();render();D.act&&showAct();const s=$('w'+wEx);s&&s.classList.add('flash')};
 function openWq(i){const e=D.plans[D.cur].ex[i];wEx=i;wqM=null;$('wqL').textContent='Neues Gewicht (kg)';$('iWq').inputMode='decimal';$('iWq').value=e.w===''?'':String(e.w).replace('.',',');$('wqT').textContent=e.n;$('dW').showModal();setTimeout(()=>{$('iWq').focus();$('iWq').select()},50)}
@@ -410,12 +458,12 @@ function showAct(){
   $('act').innerHTML=`<div class="ah"><h2 style="color:${col(p.name)}">${esc(p.name)}</h2><button id="aX">Verwerfen</button></div>
   ${A.wd?'<div class="cs" style="margin:4px 0 -4px">Zeit am Trainingsplan</div>':''}<div class="clk" id="clk">${hms(Date.now()-A.st)}</div><div class="cs">Start ${hm(A.wu||A.st)} Uhr${A.wd?` · 🔥 inkl. ${mins(A.wd)} Warm-up`:''}<br>${n}/${t} erledigt</div>
   <div class="prog"><i style="width:${t?n/t*100:0}%"></i></div>
-  <div class="cs" style="margin:-6px 0 12px;font-size:12px">Satz antippen = geschafft · erneut tippen = −1 Wdh. · lange drücken = Zahl eingeben</div>`+
+  <div class="cs" style="margin:-6px 0 12px;font-size:12px">Satz antippen = Ziel geschafft · nochmal antippen = andere Zahl wählen</div>`+
   L.map((x,i)=>{const ok=dn.has(x.id)&&x.t!=='skip',e=x.e,tag=x.t==='rep'?`<small class="tg">statt ${esc(x.o)}</small>`:x.t==='x'?'<small class="tg">Zusatz</small>':x.t==='skip'?'<small class="tg sk">übersprungen</small>':'';
     const ns=x.t==='skip'?0:Math.min(+e.s||0,12),tg=+e.r||0,sv=(A.sets||{})[x.id]||[],lg=x.t==='skip'?null:lastLog(x);
     const chips=ns?`<div class="sets">${Array.from({length:ns},(_,k)=>{const v=sv[k];return `<button data-st="${i}" data-k="${k}" class="${v==null?'':v<tg?'lo':'f'}">${v==null?(tg||'·'):v}</button>`}).join('')}</div>`:'';
     return `<div class="card wr${ok?' ok':''}${x.t==='skip'?' skp':''}" data-c="${i}"><div class="chk">${ok?'✓':x.t==='skip'?'–':''}</div>
-    <div class="grow"><div class="n">${esc(e.n)}</div>${tag}${lg?`<div class="lastl">zuletzt ${fmt(lg.w)} kg · ${lg.s.join('·')}</div>`:''}</div>${x.t==='skip'?'':`<span class="wq" data-w="${i}"><b>${fmt(e.w)}</b> kg</span><span class="p"><b>${fmt(e.s)}</b>×<b>${fmt(e.r)}</b></span>`}
+    <div class="grow"><div class="n">${esc(e.n)}</div>${tag}${lg?`<div class="lastl">zuletzt ${fmt(lg.w)} kg · ${lg.s.join('·')}</div>`:''}${(g=>g&&x.t==='plan'?`<div class="hint${g.i?' i':''}" data-sg="${i}">💡 ${esc(g.s)}</div>`:'')(x.t==='plan'?prog(e).sg:null)}</div>${x.t==='skip'?'':`<span class="wq" data-w="${i}"><b>${fmt(e.w)}</b> kg</span><span class="p"><b>${fmt(e.s)}</b>×<b>${fmt(e.r)}</b></span>`}
     <button class="more" data-o="${i}" aria-label="Optionen">⋯</button>${chips}</div>`}).join('')+
   `<button class="addx" id="aAdd">＋ Zusätzliche Übung</button>
   <div class="actb"><button id="aRest" class="${A.rs?'on':''}">${A.rs?`⏸ <span id="rclk">${hms(Date.now()-A.rs)}</span> · Stopp`:`⏱ Pause${lr?` <small>(${hms(lr)})</small>`:''}`}</button><button id="aEnd">Beenden</button></div>`;
@@ -433,16 +481,16 @@ function setVal(i,k,v){const A=D.act,x=items()[i];if(!x)return;A.sets=A.sets||{}
   if(full&&di<0)A.done.push(x.id);if(!full&&di>=0)A.done.splice(di,1);navigator.vibrate&&navigator.vibrate(10);save();showAct()}
 function lastLog(x){const c=x.t==='plan'?x.e:catalog().find(o=>key(o)===key(x.e));if(!c||!c.h)return null;const t=today();
   for(let k=c.h.length-1;k>=0;k--){const y=c.h[k];if(y.s&&y.d!==t)return y}return null}
-let lpT=0,lpF=false;
-$('act').addEventListener('pointerdown',ev=>{const b=ev.target.closest('[data-st]');if(!b)return;lpF=false;clearTimeout(lpT);
-  lpT=setTimeout(()=>{lpF=true;const i=+b.dataset.st,k=+b.dataset.k,x=items()[i],v=((D.act.sets||{})[x.id]||[])[k];
-    wqM={i,k};$('wqT').textContent=x.e.n+' – Satz '+(k+1);$('wqL').textContent='Geschaffte Wiederholungen (leer = löschen)';$('iWq').inputMode='numeric';
-    $('iWq').value=v!=null?v:(x.e.r||'');$('dW').showModal();setTimeout(()=>{$('iWq').focus();$('iWq').select()},50)},450)});
-['pointerup','pointercancel'].forEach(t=>$('act').addEventListener(t,()=>clearTimeout(lpT)));
-$('act').addEventListener('contextmenu',ev=>{if(ev.target.closest('[data-st]'))ev.preventDefault()});
+let pkI=-1,pkK=-1;
+function openPk(i,k){const x=items()[i],tg=+x.e.r||0,v=((D.act.sets||{})[x.id]||[])[k];pkI=i;pkK=k;
+  $('pkT').textContent=x.e.n+' – Satz '+(k+1);const lo=Math.max(0,tg-6);
+  $('pkL').innerHTML=Array.from({length:15},(_,j)=>lo+j).map(n=>`<button data-n="${n}" class="${n===tg?'t':''}${n===v?' c':''}">${n}</button>`).join('');$('dPk').showModal()}
+$('pkL').onclick=ev=>{const b=ev.target.closest('[data-n]');if(!b)return;$('dPk').close();setVal(pkI,pkK,+b.dataset.n)};
+$('pkD').onclick=()=>{$('dPk').close();setVal(pkI,pkK,null)};$('pkX').onclick=()=>$('dPk').close();
 $('act').onclick=ev=>{if(!D.act)return;const L=items();
-  const st=ev.target.closest('[data-st]');if(st){if(lpF){lpF=false;return}const i=+st.dataset.st,k=+st.dataset.k,x=L[i],v=((D.act.sets||{})[x.id]||[])[k],tg=+x.e.r||0;
-    setVal(i,k,v==null?tg:v>0?v-1:null);return}
+  const sgb=ev.target.closest('[data-sg]');if(sgb){openSg(L[+sgb.dataset.sg].e);return}
+  const st=ev.target.closest('[data-st]');if(st){const i=+st.dataset.st,k=+st.dataset.k,x=L[i],v=((D.act.sets||{})[x.id]||[])[k];
+    v==null?setVal(i,k,+x.e.r||0):openPk(i,k);return}
   const o=ev.target.closest('[data-o]');if(o){openOpt(+o.dataset.o);return}
   const w=ev.target.closest('[data-w]');if(w){const x=L[+w.dataset.w];x.t==='plan'?openWq(x.pi):openRp(x.t==='x'?'x':'rep',x.t==='x'?x.xi:x.id);return}
   const c=ev.target.closest('[data-c]');if(!c)return;const x=L[+c.dataset.c];if(x.t==='skip'){openOpt(+c.dataset.c);return}
@@ -485,7 +533,7 @@ function endAct(){
     const w=x.e.w===''||x.e.w==null||isNaN(+x.e.w)?'':+x.e.w;lg.push({n:x.e.n,w,s});
     const c=x.t==='plan'?x.e:catalog().find(o=>key(o)===key(x.e));if(!c)return;
     const ww=w===''?+c.w:w;if(isNaN(ww))return;const t=today(),l=c.h[c.h.length-1];
-    if(l&&l.d===t){l.w=ww;l.s=s}else c.h.push({d:t,w:ww,s});sync(c)});
+    const tg=+x.e.r||0;if(l&&l.d===t){l.w=ww;l.s=s;l.t=tg}else c.h.push({d:t,w:ww,s,t:tg});sync(c)});
   D.sess.push({...(lg.length?{lg}:{}),pn:p.name,st:A.wu||A.st,ts:A.st,en,done:n,tot:t,sk:A.skip.length,ch:L.filter(x=>x.t==='rep').map(x=>x.o+' → '+x.e.n),xt:A.xtra.map(e=>e.n),...(A.wd?{wu:A.wd}:{})});
   D.act=null;save();hideAct();const d=new Date();calY=d.getFullYear();calM=d.getMonth();setView('t')}
 
@@ -549,9 +597,10 @@ function renderG(){
   D.plans.forEach((p,pi)=>p.ex.forEach((e,i)=>{const k=key(e);if(seen.has(k)||(gF!==''&&p.name!==gF))return;
     if(gF!==''&&seen.has(k))return;seen.add(k);gL.push({e:cat[k]||e,pi,i})}));
   const inf=gL.map(x=>gInfo(x.e)),wd=inf.filter(Boolean);
-  const up4=wd.filter(x=>x.m4>0).length,stg=wd.filter(x=>x.stag).length;
+  const up4=wd.filter(x=>x.m4>0).length,stg=wd.filter(x=>x.stag).length,pr=gL.map(x=>prog(x.e)),nsg=pr.filter(x=>x.sg).length;
   $('vG').innerHTML=`<div class="tabs">${['',...D.plans.map(p=>p.name)].map(n=>`<button class="tab${n===gF?' on':''}" data-gf="${esc(n)}">${n===''?'Alle':esc(n)}</button>`).join('')}</div>`+
-  (gL.length?`<div class="kp"><div><small>Übungen</small><b>${gL.length}</b></div><div><small>Gesteigert</small><b class="up">${up4}</b><small>letzte 4 W.</small></div><div><small>Stagniert</small><b style="color:#ff9f0a">${stg}</b><small>≥ 3 Wochen</small></div></div>`+
+  `<div class="bwr"><span>Körpergewicht <b>${D.bw?fmt(D.bw)+' kg':'–'}</b></span><button id="bwE">${D.bw?'Ändern':'Eintragen'}</button></div>`+
+  (gL.length?`<div class="kp"><div><small>Vorschläge</small><b style="color:var(--ac)">${nsg}</b><small>offen</small></div><div><small>Gesteigert</small><b class="up">${up4}</b><small>letzte 4 W.</small></div><div><small>Stagniert</small><b style="color:#ff9f0a">${stg}</b><small>≥ 3 Wochen</small></div></div>`+
   gL.map((x,j)=>{const e=x.e,g=inf[j];
     if(!g)return `<div class="pgc" data-g="${j}"><div class="grow"><div class="n">${esc(e.n)}</div><div class="pgm">Noch keine Daten</div></div></div>`;
     const cl=g.im>0?'up':g.im<0?'dn':'';
@@ -559,10 +608,20 @@ function renderG(){
       (g.stag?`<span class="bdg st">⏸ seit ${Math.floor(g.since/7)} Wo.</span>`:'');
     return `<div class="pgc" data-g="${j}"><div class="grow"><div class="n">${esc(e.n)}${e.inv?'<small>⇅ Gegengew.</small>':''}</div>
     <div class="pgm"><b style="color:var(--tx)">${fmt(e.w)} kg</b> · Start ${fmt(g.f.w)} · <b class="${cl}">${g.d>0?'+':''}${fmt(g.d)} kg${g.f.w?` (${g.pc>0?'+':''}${g.pc.toFixed(0)} %)`:''}</b></div>
-    <div class="pgm">${b}${g.l.s?`Wdh. ${g.l.s.join('·')}`:''}</div></div>${spark(e)}</div>`}).join('')
+    <div class="pgm">${b}${g.l.s?`Wdh. ${g.l.s.join('·')}`:''}</div>
+    ${pr[j].on?`<div class="pgm">Ziel ${pr[j].t} · Aufstieg bei allen ≥ ${pr[j].nx}<span class="stg"><i class="${pr[j].c>0?'on':''}"></i><i class="${pr[j].c>1?'on':''}"></i></span></div>`:''}
+    ${pr[j].sg?`<div class="hint${pr[j].sg.i?' i':''}" data-sgg="${j}">💡 ${esc(pr[j].sg.s)}</div>`:''}</div>${spark(e)}</div>`}).join('')
   :'<div class="empty">Noch keine Übungen.</div>');
+  $('bwE').onclick=openBw;
 }
-$('vG').onclick=ev=>{const f=ev.target.closest('[data-gf]');if(f){gF=f.dataset.gf;renderG();return}
+function openBw(){wqM={bw:1};$('wqT').textContent='Körpergewicht';$('wqL').textContent='Körpergewicht (kg) – für Gegengewicht-Übungen';$('iWq').inputMode='decimal';
+  $('iWq').value=D.bw?String(D.bw).replace('.',','):'';$('dW').showModal();setTimeout(()=>{$('iWq').focus();$('iWq').select()},50)}
+$('sgC').onclick=()=>$('dSg').close();
+$('sgI').onclick=()=>{sgE.sk=sgP.sig;sync(sgE);save();$('dSg').close();refresh()};
+$('sgA').onclick=()=>{const e=sgE,g=sgP.sg;$('dSg').close();if(g.ty==='bw'){openBw();return}
+  if(g.r!=null)e.r=String(g.r);if(g.w!=null&&g.w!==+e.w)setW(e,g.w);e.sk=null;sync(e);save();refresh()};
+$('vG').onclick=ev=>{const h=ev.target.closest('[data-sgg]');if(h){openSg(gL[+h.dataset.sgg].e);return}
+  const f=ev.target.closest('[data-gf]');if(f){gF=f.dataset.gf;renderG();return}
   const c=ev.target.closest('[data-g]');if(c){const x=gL[+c.dataset.g];openDetE(x.e,x.pi,x.i)}};
 let dayK='';
 function openDay(k){dayK=k;const l=D.sess.filter(x=>dk(x.st)===k);if(!l.length){$('dDay').open&&$('dDay').close();return}
